@@ -2,7 +2,7 @@
 
 #include "wfc.h"
 #include "bitfield.h"
-#include "utils.h"
+// #include "utils.h" 
 #include "md5.h"
 
 #include <stdio.h>
@@ -76,7 +76,8 @@ blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
     vec2 the_location   = { 0 };
     uint8_t min_entropy = UINT8_MAX;
 
-    return 0;
+    entropy_location n;
+    return n;
 }
 
 static inline uint64_t
@@ -114,7 +115,7 @@ blk_propagate(wfc_blocks_ptr blocks,
               uint32_t gx, uint32_t gy,
               uint64_t collapsed)
 {
-    return 0;
+    return (void)0;
 }
 
 void
@@ -122,12 +123,12 @@ grd_propagate_row(wfc_blocks_ptr blocks,
                   uint32_t gx, uint32_t gy, uint32_t x, uint32_t y,
                   uint64_t collapsed)
 {
-    return 0;
+    return (void)0;
 }
 
 void
 grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
                      uint32_t x, uint32_t y, uint64_t collapsed)
 {
-    return 0;
+    return (void)0;
 }
