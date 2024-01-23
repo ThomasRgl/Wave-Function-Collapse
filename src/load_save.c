@@ -160,10 +160,12 @@ wfc_load(uint64_t seed, const char *path)
         }
 
         const uint64_t collapsed   = to_u64(str_state);
+        // printBinary(collapsed);
         *blk_at(ret, gx, gy, x, y) = collapsed;
         blk_propagate(ret, gx, gy, collapsed);
         grd_propagate_column(ret, gx, gy, x, y, collapsed);
         grd_propagate_row(ret, gx, gy, x, y, collapsed);
+        *blk_at(ret, gx, gy, x, y) = collapsed;
         if (grd_check_error_in_column(ret, gx)) {
             fprintf(stderr, "wrong propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
             exit(EXIT_FAILURE);
@@ -234,3 +236,28 @@ wfc_save_into(const wfc_blocks_ptr blocks, const char data[], const char folder[
     fprintf(stdout, "saved successfully %lu states\n", ends);
     fclose(f);
 }
+
+
+
+void printBinary(uint64_t number) {
+    // Determine the number of bits in u64_t
+    int numBits = sizeof(uint64_t) * 8;
+
+    // Loop through each bit in the number, starting from the most significant bit
+    for (int i = numBits - 1; i >= 0; i--) {
+        // Use a bitwise AND operation to check the value of the current bit
+        if ((number & (1ULL << i)) != 0) {
+            printf("1");
+        } else {
+            printf("0");
+        }
+
+        // Add space for better readability
+        if (i % 8 == 0) {
+            printf(" ");
+        }
+    }
+
+    printf("\n");
+}
+

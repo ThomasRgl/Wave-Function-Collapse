@@ -115,7 +115,12 @@ blk_propagate(wfc_blocks_ptr blocks,
               uint32_t gx, uint32_t gy,
               uint64_t collapsed)
 {
-    return (void)0;
+    uint32_t blk_size = blocks->block_side*blocks->block_side;
+    for (int i = 0; i < blk_size; i++) {
+        blocks->states[gx * blocks->grid_side * blk_size + gy * blk_size + i] &= ~(collapsed);
+    }
+
+    return;
 }
 
 void
@@ -123,12 +128,94 @@ grd_propagate_row(wfc_blocks_ptr blocks,
                   uint32_t gx, uint32_t gy, uint32_t x, uint32_t y,
                   uint64_t collapsed)
 {
-    return (void)0;
+    uint32_t blk_size = blocks->block_side*blocks->block_side;
+    for (int i = 0; i < blocks->grid_side; i++) {
+        for (int j = 0; j < blocks->block_side; j++) {
+            blocks->states[gx * blocks->grid_side * blk_size + i * blk_size + x * blocks->block_side + j] &= ~(collapsed);
+        }
+    }
+
+    return;
 }
 
 void
 grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
                      uint32_t x, uint32_t y, uint64_t collapsed)
 {
-    return (void)0;
+    uint32_t blk_size = blocks->block_side*blocks->block_side;
+    for (int i = 0; i < blocks->grid_side; i++) {
+        for (int j = 0; j < blocks->block_side; j++) {
+            blocks->states[i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y] &= ~(collapsed);
+        }
+    }
+
+    return;
+}
+
+void printBinary2(uint64_t number) {
+    // Determine the number of bits in u64_t
+    int numBits = sizeof(uint64_t);
+
+    // Loop through each bit in the number, starting from the most significant bit
+    for (int i = numBits - 1; i >= 0; i--) {
+        // Use a bitwise AND operation to check the value of the current bit
+        if ((number & (1ULL << i)) != 0) {
+            printf("1");
+        } else {
+            printf("0");
+        }
+
+        // Add space for better readability
+        if (i % 8 == 0) {
+            printf(" ");
+        }
+    }
+    // printf("\n");
+}
+
+void grd_print(FILE *const file, const wfc_blocks_ptr block){
+    FILE * fp = file;
+    if(fp == NULL)
+        fp = stdout;
+    
+    uint8_t gs = block->grid_side;
+    uint8_t bs = block->block_side;
+
+    for(uint32_t ii = 0; ii < gs; ii++){
+
+        for(uint32_t i = 0; i < gs; i++){
+            fprintf(fp, "+");
+            for(uint32_t j = 0; j < bs; j++){
+                fprintf(fp, "----------+");
+            }
+            fprintf(fp, "   ");
+        }
+        fprintf(fp, "\n");
+
+        for(uint32_t jj = 0; jj < bs; jj++){
+
+            for(uint32_t i = 0; i < gs; i++){
+                fprintf(fp, "|");
+                for(uint32_t j = 0; j < bs; j++){
+                    const uint64_t collapsed = *blk_at(block, ii,i,jj,j);
+                    printBinary2(collapsed);
+                    fprintf(fp, " |", collapsed);
+                    // fprintf(fp, "%3lu|", collapsed);
+                }
+                fprintf(fp, "   ");
+            }
+            fprintf(fp, "\n");
+
+            for(int i = 0; i < gs; i++){
+                fprintf(fp, "+");
+                for(int j = 0; j < bs; j++){
+                    fprintf(fp, "----------+");
+                }
+                fprintf(fp, "   ");
+            }
+            fprintf(fp, "\n");
+        }
+        fprintf(fp, "\n");
+    }
+
 }

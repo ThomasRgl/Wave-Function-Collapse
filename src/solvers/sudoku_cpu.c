@@ -26,5 +26,7 @@ solve_cpu(wfc_blocks_ptr blocks)
             break;
     }
 
+    grd_print(NULL, blocks);
+
     return false;
 }
