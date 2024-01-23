@@ -1,0 +1,6 @@
+*.o
+*.json
+*.save
+wfc
+build/
+.cache/
