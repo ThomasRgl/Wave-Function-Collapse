@@ -98,6 +98,7 @@ list_pop(seeds_list *restrict *const list_ptr)
     } else if (list->size >= 2) {
         memmove(&list->items[0], &list->items[1], (list->count - 1) * sizeof(seed_item));
         list->size -= 1;
+        list->count -= 1;
     } else {
         free(list);
         *list_ptr = NULL;
@@ -125,7 +126,7 @@ seeds_list_pop(seeds_list *restrict *const list_ptr)
     else if (list->items[0].type == seed_item_tuple) {
         const uint64_t ret = list->items[0].content.from;
         list->items[0].content.from += 1;
-        if (list->items[0].content.from >= list->items[0].content.to) {
+        if (list->items[0].content.from > list->items[0].content.to) {
             list_pop(list_ptr);
         }
         return ret;

@@ -22,10 +22,7 @@ main(int argc, char **argv)
     wfc_blocks_ptr blocks    = NULL;
     pthread_mutex_t seed_mtx = PTHREAD_MUTEX_INITIALIZER;
 
-    // bool *volatile const quit_ptr           = &quit;
-    // uint64_t *volatile const iterations_ptr = &iterations;
-
-    int *volatile const quit_ptr           = &quit;
+    bool *volatile const quit_ptr           = &quit;
     uint64_t *volatile const iterations_ptr = &iterations;
 
     const uint64_t max_iterations = count_seeds(args.seeds);
@@ -38,7 +35,7 @@ main(int argc, char **argv)
         pthread_mutex_unlock(&seed_mtx);
 
         if (!has_next_seed) {
-            __atomic_fetch_or(quit_ptr, (int)1, __ATOMIC_SEQ_CST);
+            __atomic_fetch_or((int*)quit_ptr, true, __ATOMIC_SEQ_CST);
             fprintf(stderr, "no more seed to try\n");
             break;
         }
@@ -48,19 +45,19 @@ main(int argc, char **argv)
         __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
 
         if (solved && args.output_folder != NULL) {
-            __atomic_fetch_or(quit_ptr, (int)1, __ATOMIC_SEQ_CST);
+            __atomic_fetch_or((int*)quit_ptr, true, __ATOMIC_SEQ_CST);
             fputc('\n', stdout);
             wfc_save_into(blocks, args.data_file, args.output_folder);
         }
 
         else if (solved) {
-            __atomic_fetch_or(quit_ptr, (int)1, __ATOMIC_SEQ_CST);
+            __atomic_fetch_or((int*)quit_ptr, 1, __ATOMIC_SEQ_CST);
             fputs("\nsuccess with result:\n", stdout);
             abort();
         }
 
         else if (!*quit_ptr) {
-            fprintf(stdout, "\r%.2f%% -> %.2fs",
+            fprintf(stdout, "\r%.2f%% -> %.2fs\n",
                     ((double)(*iterations_ptr) / (double)(max_iterations)) * 100.0,
                     omp_get_wtime() - start);
         }

@@ -117,7 +117,8 @@ blk_propagate(wfc_blocks_ptr blocks,
 {
     uint32_t blk_size = blocks->block_side*blocks->block_side;
     for (int i = 0; i < blk_size; i++) {
-        blocks->states[gx * blocks->grid_side * blk_size + gy * blk_size + i] &= ~(collapsed);
+        uint64_t idx = gx * blocks->grid_side * blk_size + gy * blk_size + i;
+        blocks->states[idx] &= ~(collapsed);
     }
 
     return;
@@ -131,7 +132,8 @@ grd_propagate_row(wfc_blocks_ptr blocks,
     uint32_t blk_size = blocks->block_side*blocks->block_side;
     for (int i = 0; i < blocks->grid_side; i++) {
         for (int j = 0; j < blocks->block_side; j++) {
-            blocks->states[gx * blocks->grid_side * blk_size + i * blk_size + x * blocks->block_side + j] &= ~(collapsed);
+            uint64_t idx = gx * blocks->grid_side * blk_size + i * blk_size + x * blocks->block_side + j;
+            blocks->states[idx] &= ~(collapsed);
         }
     }
 
@@ -145,7 +147,8 @@ grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
     uint32_t blk_size = blocks->block_side*blocks->block_side;
     for (int i = 0; i < blocks->grid_side; i++) {
         for (int j = 0; j < blocks->block_side; j++) {
-            blocks->states[i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y] &= ~(collapsed);
+            uint64_t idx = i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y;
+            blocks->states[ idx ] &= ~(collapsed);
         }
     }
 
