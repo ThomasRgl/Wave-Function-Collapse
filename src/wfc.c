@@ -66,7 +66,7 @@ wfc_clone_into(wfc_blocks_ptr *const restrict ret_ptr, uint64_t seed, const wfc_
     }
 
     memcpy(ret, blocks, size);
-    ret->states[0] = seed;
+    ret->seed = seed;
     *ret_ptr       = ret;
 }
 
@@ -116,7 +116,7 @@ blk_propagate(wfc_blocks_ptr blocks,
               uint64_t collapsed)
 {
     uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blk_size; i++) {
+    for (uint64_t i = 0; i < blk_size; i++) {
         uint64_t idx = gx * blocks->grid_side * blk_size + gy * blk_size + i;
         blocks->states[idx] &= ~(collapsed);
     }
@@ -130,8 +130,8 @@ grd_propagate_row(wfc_blocks_ptr blocks,
                   uint64_t collapsed)
 {
     uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blocks->grid_side; i++) {
-        for (int j = 0; j < blocks->block_side; j++) {
+    for (uint32_t i = 0; i < blocks->grid_side; i++) {
+        for (uint32_t j = 0; j < blocks->block_side; j++) {
             uint64_t idx = gx * blocks->grid_side * blk_size + i * blk_size + x * blocks->block_side + j;
             blocks->states[idx] &= ~(collapsed);
         }
@@ -145,8 +145,8 @@ grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
                      uint32_t x, uint32_t y, uint64_t collapsed)
 {
     uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blocks->grid_side; i++) {
-        for (int j = 0; j < blocks->block_side; j++) {
+    for (uint32_t i = 0; i < blocks->grid_side; i++) {
+        for (uint32_t j = 0; j < blocks->block_side; j++) {
             uint64_t idx = i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y;
             blocks->states[ idx ] &= ~(collapsed);
         }
@@ -202,7 +202,7 @@ void grd_print(FILE *const file, const wfc_blocks_ptr block){
                 for(uint32_t j = 0; j < bs; j++){
                     const uint64_t collapsed = *blk_at(block, ii,i,jj,j);
                     printBinary2(collapsed);
-                    fprintf(fp, " |", collapsed);
+                    fprintf(fp, " |");
                     // fprintf(fp, "%3lu|", collapsed);
                 }
                 fprintf(fp, "   ");

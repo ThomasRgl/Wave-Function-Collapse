@@ -9,7 +9,7 @@ bool
 solve_cpu(wfc_blocks_ptr blocks)
 {
     uint64_t iteration  = 0;
-    const uint64_t seed = blocks->states[0];
+    const uint64_t seed = blocks->seed;
     struct {
         uint32_t gy, x, y, _1;
         uint64_t state;

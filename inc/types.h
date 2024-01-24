@@ -21,6 +21,7 @@ typedef struct {
 } entropy_location;
 
 typedef struct {
+    uint64_t seed;
     uint8_t block_side;
     uint8_t grid_side;
 
