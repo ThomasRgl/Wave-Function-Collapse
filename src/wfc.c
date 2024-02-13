@@ -187,7 +187,7 @@ blk_filter_mask_for_block(wfc_blocks_ptr blocks,
 }
 
 bool
-grd_check_error_in_column(wfc_blocks_ptr blocks, uint32_t gx, u_int32_t gy, uint32_t x, u_int32_t y)
+grd_check_error_in_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
 {
     uint64_t mask = grd_filter_mask_for_column(blocks, gx, x);
     uint64_t state = 0;
@@ -209,7 +209,7 @@ grd_check_error_in_column(wfc_blocks_ptr blocks, uint32_t gx, u_int32_t gy, uint
 }
 
 bool
-grd_check_error_in_row(wfc_blocks_ptr blocks, uint32_t gx, u_int32_t gy, uint32_t x, u_int32_t y)
+grd_check_error_in_row(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
 {
     uint64_t mask = grd_filter_mask_for_row(blocks, gy, y);
     uint64_t state = 0;
@@ -231,7 +231,7 @@ grd_check_error_in_row(wfc_blocks_ptr blocks, uint32_t gx, u_int32_t gy, uint32_
 }
 
 bool
-grd_check_error_in_block(wfc_blocks_ptr blocks, uint32_t gx, u_int32_t gy, uint32_t x, u_int32_t y)
+grd_check_error_in_block(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
 {
     uint64_t mask = blk_filter_mask_for_block(blocks, gx, gy);
     uint64_t state = 0;
