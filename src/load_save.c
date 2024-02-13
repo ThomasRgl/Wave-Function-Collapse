@@ -72,7 +72,7 @@ to_u32(const char *string)
     return (uint32_t)integer;
 }
 
-static inline uint32_t
+static inline uint64_t
 to_u64(const char *string)
 {
     char *end               = NULL;
@@ -81,7 +81,7 @@ to_u64(const char *string)
         fprintf(stderr, "expected positive integer, got %lld\n", integer);
         exit(EXIT_FAILURE);
     }
-    return (uint32_t)integer;
+    return (uint64_t)integer;
 }
 
 wfc_blocks_ptr
