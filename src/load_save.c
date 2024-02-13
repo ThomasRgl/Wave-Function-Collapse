@@ -72,7 +72,7 @@ to_u32(const char *string)
     return (uint32_t)integer;
 }
 
-static inline uint32_t
+static inline uint64_t
 to_u64(const char *string)
 {
     char *end               = NULL;
@@ -81,7 +81,7 @@ to_u64(const char *string)
         fprintf(stderr, "expected positive integer, got %lld\n", integer);
         exit(EXIT_FAILURE);
     }
-    return (uint32_t)integer;
+    return (uint64_t)integer;
 }
 
 wfc_blocks_ptr
@@ -159,15 +159,27 @@ wfc_load(uint64_t seed, const char *path)
             exit(EXIT_FAILURE);
         }
 
-        const uint64_t collapsed   = to_u64(str_state);
-        // printBinary(collapsed);
+        const uint64_t state   = to_u64(str_state);
+        uint64_t collapsed = bitfield_set(0, state-1);
+        // printf("collapsed: %lu (", state);
+        // printBinary2(collapsed);
+        // printf(") at : %lu, %lu, %lu, %lu\n", gx, gy, x, y);
+        // printf("\n");
         *blk_at(ret, gx, gy, x, y) = collapsed;
         blk_propagate(ret, gx, gy, collapsed);
         grd_propagate_column(ret, gx, gy, x, y, collapsed);
         grd_propagate_row(ret, gx, gy, x, y, collapsed);
         *blk_at(ret, gx, gy, x, y) = collapsed;
-        if (grd_check_error_in_column(ret, gx)) {
-            fprintf(stderr, "wrong propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
+        if (grd_check_error_in_column(ret, gx, gy, x, y)) {
+            fprintf(stderr, "wrong column propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
+            exit(EXIT_FAILURE);
+        }
+        if (grd_check_error_in_row(ret, gx, gy, x, y)) {
+            fprintf(stderr, "wrong row propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
+            exit(EXIT_FAILURE);
+        }
+        if (grd_check_error_in_block(ret, gx, gy, x, y)) {
+            fprintf(stderr, "wrong block propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
             exit(EXIT_FAILURE);
         }
     }
