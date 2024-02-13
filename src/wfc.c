@@ -1,3 +1,4 @@
+#include <stdint.h>
 #define _GNU_SOURCE
 
 #include "wfc.h"
@@ -12,6 +13,7 @@
 #include <errno.h>
 #include <string.h>
 #include <strings.h>
+
 
 uint64_t
 entropy_collapse_state(uint64_t state,
@@ -41,7 +43,8 @@ entropy_collapse_state(uint64_t state,
 uint8_t
 entropy_compute(uint64_t state)
 {
-    return 0;
+    
+    return bitfield_count(state);
 }
 
 void
@@ -73,11 +76,40 @@ wfc_clone_into(wfc_blocks_ptr *const restrict ret_ptr, uint64_t seed, const wfc_
 entropy_location
 blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
 {
-    vec2 the_location   = { 0 };
+    uint64_t minima;
     uint8_t min_entropy = UINT8_MAX;
+    vec2 the_location   = { 0 };
+    uint64_t * blk_state = grd_at(blocks, gx, gy);
 
-    entropy_location n;
-    return n;
+    uint32_t bs = blocks->block_side; 
+    for (uint32_t y = 0; y < bs; y++) {
+        for (uint32_t x = 0; x < bs; x++) {
+            uint32_t idx = y * bs + x;
+            uint64_t state = blk_state[ idx ] ;
+            uint8_t  entropy = entropy_compute(state);
+
+            // this condition accept 0
+            // if entropy == 0, error will be raise later 
+            if( entropy != 1  ){
+                // smallest entropy
+                if(min_entropy > entropy){
+                    min_entropy = entropy;
+                    minima = 0;
+                    bitfield_set(minima, (uint8_t)idx);
+                }
+                //add to potential candidates
+                else if (min_entropy == entropy) {
+                    bitfield_set(minima, (uint8_t)idx);
+                }
+            }
+        }
+    }
+    
+    uint32_t candidate = bitfield_count(minima);
+    entropy_location loc;
+    loc.location = the_location;
+    loc.entropy = min_entropy;
+    return loc;
 }
 
 static inline uint64_t

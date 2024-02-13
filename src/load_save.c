@@ -134,7 +134,7 @@ wfc_load(uint64_t seed, const char *path)
         for (uint8_t i = 0; i < ret->block_side * ret->block_side; i += 1) {
             mask = bitfield_set(mask, i);
         }
-        ret->states[0] = seed;
+        ret->seed = seed;
         for (uint64_t i = 0; i < blkcnt + base; i += 1) {
             ret->states[i] = mask;
         }
