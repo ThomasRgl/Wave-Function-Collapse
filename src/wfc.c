@@ -14,6 +14,12 @@
 #include <string.h>
 #include <strings.h>
 
+// uint64_t 
+// generate_random(
+// uint32_t gx, uint32_t gy, uint32_t x, uint32_t y,
+//                        uint64_t seed,
+//                        uint64_t iteration
+// ){}
 
 uint64_t
 entropy_collapse_state(uint64_t state,
@@ -37,13 +43,29 @@ entropy_collapse_state(uint64_t state,
 
     md5((uint8_t *)&random_state, sizeof(random_state), digest);
 
-    return 0;
+    uint64_t state_count = bitfield_count(state);
+    uint8_t random = (uint8_t)((uint64_t*) &digest)[0];
+    uint8_t nth = random%state_count + 1;
+    printf(" nth state chosen : %u \n", (uint8_t) nth);
+    printf(" ancien state :  " );
+    printBinary2(state);
+    printf("  =  %lu", state);
+    printf("\n");
+    // state = bitfield_only_nth_set(state, 2);
+    // state = bitfield_only_nth_set(state, (uint8_t)random%state_count - 1);
+    state = bitfield_only_nth_set(state, (uint8_t)nth - 1);
+    printf(" nouveau state : " );
+    printBinary2(state);
+    printf("  =  %lu", state);
+    printf("\n");
+
+    return state;
 }
 
 uint8_t
 entropy_compute(uint64_t state)
 {
-    
+     
     return bitfield_count(state);
 }
 
@@ -73,6 +95,43 @@ wfc_clone_into(wfc_blocks_ptr *const restrict ret_ptr, uint64_t seed, const wfc_
     *ret_ptr       = ret;
 }
 
+// uint64_t *
+// choose_and_collapse (const wfc_blocks_ptr blocks, uint64_t ite){
+//     uint8_t min_entropy = UINT8_MAX;
+//     uint32_t loc_x = 0 ; 
+//     uint32_t loc_y = 0;
+//     uint32_t loc_gy = 0;
+//     uint32_t loc_gx = 0;
+//
+//     for( uint32_t gy = 0; gy < blocks->grid_side; gy++ ){
+//         for( uint32_t gx = 0; gx < blocks->grid_side; gx++ ){
+//             entropy_location loc = blk_min_entropy(blocks, gx, gy);
+//             if( loc.entropy < min_entropy ){
+//                 min_entropy = loc.entropy;
+//                 loc_x = loc.location.x;
+//                 loc_y = loc.location.y;
+//                 loc_gy = gy;
+//                 loc_gx = gx;
+//             }
+//         }
+//     }
+//     printf(" choose loc : [%d, %d] [%d, %d] = %d\n", loc_gy, loc_gx, loc_y, loc_x, min_entropy );
+//     
+//     uint64_t * state = blk_at(blocks, loc_gx, loc_gy, loc_x, loc_y);
+//     uint64_t collapsed_state = entropy_collapse_state(
+//         *state, loc_gx, loc_gy, loc_x, loc_y, blocks->seed, ite);
+//
+//     *state = collapsed_state;
+//
+//     blk_propagate(blocks, loc_gx, loc_gy, collapsed_state);
+//     grd_propagate_column(blocks, loc_gx, loc_gy, loc_x, loc_y, collapsed_state);
+//     grd_propagate_row(blocks, loc_gx, loc_gy, loc_x, loc_y, collapsed_state);
+//  
+//
+//     return state;
+//     
+// }
+
 entropy_location
 blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
 {
@@ -84,9 +143,10 @@ blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
     uint32_t bs = blocks->block_side; 
     for (uint32_t y = 0; y < bs; y++) {
         for (uint32_t x = 0; x < bs; x++) {
-            uint32_t idx = y * bs + x;
+            uint64_t idx = idx_at(blocks, 0, 0, x, y);
             uint64_t state = blk_state[ idx ] ;
             uint8_t  entropy = entropy_compute(state);
+            // printf("idx %d %d = %d == %d\n",y , x, idx, entropy);
 
             // this condition accept 0
             // if entropy == 0, error will be raise later 
@@ -94,21 +154,29 @@ blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
                 // smallest entropy
                 if(min_entropy > entropy){
                     min_entropy = entropy;
-                    minima = 0;
-                    bitfield_set(minima, (uint8_t)idx);
+                    the_location.y = y;
+                    the_location.x = x;
+
+                    // minima = 0; // minima store the location of each minimal and equal state,
+                    // when we find a smaller entropy we reset that bloc
+                    // bitfield_set(minima, (uint8_t)idx);
                 }
                 //add to potential candidates
-                else if (min_entropy == entropy) {
-                    bitfield_set(minima, (uint8_t)idx);
-                }
+                // else if (min_entropy == entropy) {
+                //     bitfield_set(minima, (uint8_t)idx);
+                // }
             }
         }
     }
     
-    uint32_t candidate = bitfield_count(minima);
+    // uint32_t candidate = bitfield_count(minima);
     entropy_location loc;
     loc.location = the_location;
     loc.entropy = min_entropy;
+
+    printf("min entropy blk (%u; %u) : [%u; %u] = %u\n",
+                   gy, gx, loc.location.y, loc.location.x, loc.entropy );
+
     return loc;
 }
 
@@ -261,26 +329,30 @@ blk_propagate(wfc_blocks_ptr blocks,
               uint32_t gx, uint32_t gy,
               uint64_t collapsed)
 {
-    uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blk_size; i++) {
-        uint64_t idx = gx * blocks->grid_side * blk_size + gy * blk_size + i;
-        if (bitfield_count(blocks->states[idx]) > 1) {
-            blocks->states[idx] &= ~(collapsed);
+    uint64_t side = blocks->block_side;
+    for (uint32_t y = 0; y < side; y++) {
+        for (uint32_t x = 0; x < side; x++) {
+            uint64_t idx = idx_at(blocks, gx, gy, x, y);
+            if (bitfield_count(blocks->states[idx]) > 1) {
+                blocks->states[idx] &= ~(collapsed);
+            }
         }
     }
 
     return;
 }
 
+
+
 void
-grd_propagate_row(wfc_blocks_ptr blocks,
-                  uint32_t gx, uint32_t gy, uint32_t x, uint32_t y,
-                  uint64_t collapsed)
+grd_propagate_row(wfc_blocks_ptr blocks, uint32_t _, uint32_t gy,
+                     uint32_t __, uint32_t y, uint64_t collapsed)
 {
     uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blocks->grid_side; i++) {
-        for (int j = 0; j < blocks->block_side; j++) {
-            uint64_t idx = gx * blocks->grid_side * blk_size + i * blk_size + x * blocks->block_side + j;
+    for (uint32_t gx = 0; gx < blocks->grid_side; gx++) {
+        for (uint32_t x = 0; x < blocks->block_side; x++) {
+            uint64_t idx = idx_at(blocks, gx, gy, x, y);
+            // uint64_t idx = i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y;
             if (bitfield_count(blocks->states[idx]) > 1) {
                 blocks->states[idx] &= ~(collapsed);
             }
@@ -291,13 +363,15 @@ grd_propagate_row(wfc_blocks_ptr blocks,
 }
 
 void
-grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
-                     uint32_t x, uint32_t y, uint64_t collapsed)
+grd_propagate_column(wfc_blocks_ptr blocks,
+                  uint32_t gx, uint32_t _, uint32_t x, uint32_t __,
+                  uint64_t collapsed)
 {
-    uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blocks->grid_side; i++) {
-        for (int j = 0; j < blocks->block_side; j++) {
-            uint64_t idx = i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y;
+    // uint32_t blk_size = blocks->block_side*blocks->block_side;
+    for (uint32_t gy = 0; gy < blocks->grid_side; gy++) {
+        for (uint32_t y = 0; y < blocks->block_side; y++) {
+            // uint64_t idx = gx * blocks->grid_side * blk_size + i * blk_size + x * blocks->block_side + j;
+            uint64_t idx = idx_at(blocks, gx, gy, x, y);
             if (bitfield_count(blocks->states[idx]) > 1) {
                 blocks->states[idx] &= ~(collapsed);
             }
@@ -352,10 +426,11 @@ void grd_print(FILE *const file, const wfc_blocks_ptr block){
             for(uint32_t i = 0; i < gs; i++){
                 fprintf(fp, "|");
                 for(uint32_t j = 0; j < bs; j++){
-                    const uint64_t collapsed = *blk_at(block, ii,i,jj,j);
+                    const uint64_t collapsed = *blk_at(block, i,ii,j,jj);
                     printBinary2(collapsed);
-                    fprintf(fp, " |", collapsed);
-                    // fprintf(fp, "%3lu|", collapsed);
+                    // fprintf(fp, "   %lu     ", idx_at(block, i,ii,j,jj) );
+                    fprintf(fp, " |");
+                    // fprintf(fp, "%3lu|");
                 }
                 fprintf(fp, "   ");
             }

@@ -161,10 +161,10 @@ wfc_load(uint64_t seed, const char *path)
 
         const uint64_t state   = to_u64(str_state);
         uint64_t collapsed = bitfield_set(0, state-1);
-        // printf("collapsed: %lu (", state);
-        // printBinary2(collapsed);
-        // printf(") at : %lu, %lu, %lu, %lu\n", gx, gy, x, y);
-        // printf("\n");
+        printf("collapsed: %lu (", state);
+        printBinary2(collapsed);
+        printf(") at : %lu, %lu, %lu, %lu\n", gy, gx, y, x);
+        printf("\n");
         *blk_at(ret, gx, gy, x, y) = collapsed;
         blk_propagate(ret, gx, gy, collapsed);
         grd_propagate_column(ret, gx, gy, x, y, collapsed);
