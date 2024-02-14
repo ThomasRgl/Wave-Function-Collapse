@@ -161,23 +161,11 @@ wfc_load(uint64_t seed, const char *path)
 
         const uint64_t state   = to_u64(str_state);
         uint64_t collapsed = bitfield_set(0, state-1);
-        // printf("collapsed: %lu (", state);
+        // printf("collapsed (input): %lu (", state);
         // printBinary2(collapsed);
         // printf(") at : %lu, %lu, %lu, %lu\n", gx, gy, x, y);
         // printf("\n");
         grd_propagate_all(ret, gx, gy, x, y, collapsed);
-        // if (grd_check_error_in_column(ret, gx, gy, x, y)) {
-        //     fprintf(stderr, "wrong column propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
-        //     exit(EXIT_FAILURE);
-        // }
-        // if (grd_check_error_in_row(ret, gx, gy, x, y)) {
-        //     fprintf(stderr, "wrong row propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
-        //     exit(EXIT_FAILURE);
-        // }
-        // if (grd_check_error_in_block(ret, gx, gy, x, y)) {
-        //     fprintf(stderr, "wrong block propagation in block (%u, %u) from (%u, %u)\n", gx, gy, x, y);
-        //     exit(EXIT_FAILURE);
-        // }
     }
 
     free(line);

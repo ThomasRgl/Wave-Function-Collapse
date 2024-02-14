@@ -276,7 +276,10 @@ blk_propagate(wfc_blocks_ptr blocks,
                 stack_cells[*stack_size] = idx;
                 (*stack_size)++;
             }
-        } 
+        } else if (entropy == 0) {
+            fprintf(stderr, "error in block propagation in block (%u, %u) at %u\n", gx, gy, i);
+            exit(EXIT_FAILURE);
+        }
     }
 
     return changed;
@@ -303,6 +306,9 @@ grd_propagate_row(wfc_blocks_ptr blocks,
                     stack_cells[*stack_size] = idx;
                     (*stack_size)++;
                 }
+            } else if (entropy == 0) {
+                fprintf(stderr, "error in row propagation in block (%u, %u) at %u\n", gx, gy, i);
+                exit(EXIT_FAILURE);
             }
         }
     }
@@ -330,6 +336,9 @@ grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
                     stack_cells[*stack_size] = idx;
                     (*stack_size)++;
                 }
+            } else if (entropy == 0) {
+                fprintf(stderr, "error in column propagation in block (%u, %u) at %u\n", gx, gy, i);
+                exit(EXIT_FAILURE);
             }
         }
     }
@@ -375,7 +384,10 @@ grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, u
 
         // get the new collapsed state
         collapsed = *blk_at(blocks, gx, gy, x, y);
-        // printf("collapsed: %lu\n\n", collapsed);
+
+        // printf("collapsed (stack): %lu (", collapsed);
+        // printBinary2(collapsed);
+        // printf(") at : %lu, %lu, %lu, %lu\n", gx, gy, x, y);
 
         // propagate the new cell
         changed |= blk_propagate(blocks, gx, gy, collapsed, stack_cells, &stack_size);
