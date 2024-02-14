@@ -55,5 +55,6 @@ uint64_t
 bitfield_only_nth_set(uint64_t x, uint8_t n)
 {
     return 1llu << find_nth_set_bit(x, n);
+    // return find_nth_set_bit(x, n);
 }
 

@@ -158,7 +158,7 @@ wfc_load(uint64_t seed, const char *path)
             fprintf(stderr, "invalid block coordinates (%u, %u) in grid (%u, %u)\n", x, y, gx, gy);
             exit(EXIT_FAILURE);
         }
-
+      
         const uint64_t state   = to_u64(str_state);
         uint64_t collapsed = bitfield_set(0, state-1);
         // printf("collapsed (input): %lu (", state);

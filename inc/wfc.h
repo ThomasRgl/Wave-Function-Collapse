@@ -34,21 +34,34 @@ wfc_control_states_count(uint64_t grid_size, uint64_t block_size)
     return grid_size * grid_size * block_size * block_size;
 }
 
+static inline uint64_t 
+idx_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
+{
+    uint64_t idx = gy * blocks->grid_side * blocks->block_side * blocks->block_side +
+                   gx * blocks->block_side * blocks->block_side + y * blocks->block_side + x;
+    return idx;
+}
+
 static inline uint64_t *
 grd_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
 {
-    uint64_t idx = gx * blocks->grid_side * blocks->block_side * blocks->block_side +
-                   gy * blocks->block_side * blocks->block_side;
+    uint64_t idx = idx_at(blocks, gx, gy, 0, 0);
     return &blocks->states[idx];
 }
 
 static inline uint64_t *
 blk_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
 {
-    uint64_t idx = gx * blocks->grid_side * blocks->block_side * blocks->block_side +
-                   gy * blocks->block_side * blocks->block_side + x * blocks->block_side + y;
+    uint64_t idx = idx_at(blocks, gx, gy, x, y);
+
     return &blocks->states[idx];
 }
+
+
+
+
+
+void printBinary2(uint64_t number) ;
 
 // Printing functions
 void blk_print(FILE *const, const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
@@ -56,6 +69,7 @@ void grd_print(FILE *const, const wfc_blocks_ptr block);
 
 // Entropy functions
 entropy_location blk_min_entropy(const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
+uint64_t * choose_and_collapse(const wfc_blocks_ptr blocks, uint64_t ite);
 uint8_t entropy_compute(uint64_t);
 uint64_t entropy_collapse_state(uint64_t, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t, uint64_t);
 
