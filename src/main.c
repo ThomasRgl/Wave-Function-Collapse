@@ -1,3 +1,4 @@
+#include "utils.h"
 #define _GNU_SOURCE
 
 #include "bitfield.h"
@@ -61,7 +62,11 @@ main(int argc, char **argv)
                     ((double)(*iterations_ptr) / (double)(max_iterations)) * 100.0,
                     omp_get_wtime() - start);
         }
+        super_safe_free(blocks);
+        blocks = NULL;
     }
+
+    super_safe_free(init);
 
     return 0;
 }

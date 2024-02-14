@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define forever for (;;)
+#define jusqua_la_retraite for (;;)
 
 /// Parses the arguments, prints the help message if needed and abort on error.
 wfc_args wfc_parse_args(int argc, char **argv);

@@ -20,16 +20,28 @@ typedef struct {
     uint16_t _2;
 } entropy_location;
 
+// typedef struct {
+//     uint64_t seed;
+//     uint8_t block_side;
+//     uint8_t grid_side;
+//
+//     uint8_t _1;
+//     uint8_t _2;
+//     uint32_t _3;
+//
+//     // uint64_t states[];
+//     uint64_t *states;
+// } wfc_blocks;
 typedef struct {
     uint64_t seed;
     uint8_t block_side;
     uint8_t grid_side;
 
-    uint8_t _1;
-    uint8_t _2;
-    uint32_t _3;
+    uint64_t * row_masks;
+    uint64_t * col_masks;
+    uint64_t * blk_masks;
 
-    uint64_t states[];
+    uint64_t *states;
 } wfc_blocks;
 
 typedef wfc_blocks *wfc_blocks_ptr;
