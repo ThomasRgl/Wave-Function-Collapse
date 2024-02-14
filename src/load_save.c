@@ -143,11 +143,11 @@ wfc_load(uint64_t seed, const char *path)
     while ((read = getline(&line, &len, f)) != -1) {
         trim(line);
 
-        char *str_gx      = line;
-        char *str_gy      = next(str_gx, ',');
-        char *str_x       = next(str_gy, ',');
-        char *str_y       = next(str_x, ',');
-        char *str_state   = next(str_y, '=');
+        char *str_gy      = line;
+        char *str_gx      = next(str_gy, ',');
+        char *str_y       = next(str_gx, ',');
+        char *str_x       = next(str_y, ',');
+        char *str_state   = next(str_x, '=');
         const uint32_t gx = to_u32(str_gx), gy = to_u32(str_gy), x = to_u32(str_x),
                        y = to_u32(str_y);
 
@@ -161,10 +161,9 @@ wfc_load(uint64_t seed, const char *path)
       
         const uint64_t state   = to_u64(str_state);
         uint64_t collapsed = bitfield_set(0, state-1);
-        // printf("collapsed (input): %lu (", state);
-        // printBinary2(collapsed);
-        // printf(") at : %lu, %lu, %lu, %lu\n", gx, gy, x, y);
-        // printf("\n");
+        printf("collapsed (input): %lu (", state);
+        printBinary2(collapsed);
+        printf(") at : %u, %u, %u, %u\n", gy, gx, y, x);
         grd_propagate_all(ret, gx, gy, x, y, collapsed);
     }
 

@@ -51,9 +51,11 @@ solve_cpu(wfc_blocks_ptr blocks)
         *state = collapsed_state;
         
         // propagate
-        blk_propagate(blocks, gx, gy, collapsed_state);
-        grd_propagate_column(blocks, gx, gy, x, y, collapsed_state);
-        grd_propagate_row(blocks, gx, gy, x, y, collapsed_state);
+        // blk_propagate(blocks, gx, gy, collapsed_state);
+        // grd_propagate_column(blocks, gx, gy, x, y, collapsed_state);
+        // grd_propagate_row(blocks, gx, gy, x, y, collapsed_state);
+
+        grd_propagate_all(blocks, gx, gy, x, y, collapsed_state);
  
 
         // 1. collapse

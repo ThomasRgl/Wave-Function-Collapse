@@ -180,149 +180,149 @@ blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
     return loc;
 }
 
-static inline uint64_t
-blk_filter_mask_for_row(wfc_blocks_ptr blocks,
-                           uint32_t gx, uint32_t gy, uint32_t y)
-{
-    uint64_t mask = 0;
-    uint64_t state = 0;
-    for (uint32_t i = 0; i < blocks->block_side; i++) {
-        state = *blk_at(blocks, gx, gy, i, y);
-        if(bitfield_count(state) == 1){
-            mask |= state;
-        }
-    }
-
-    return mask;
-}
-
-static inline uint64_t
-blk_filter_mask_for_column(wfc_blocks_ptr blocks,
-                            uint32_t gx, uint32_t gy, uint32_t x)
-{
-    uint64_t mask = 0;
-    uint64_t state = 0;
-    for (uint32_t i = 0; i < blocks->block_side; i++) {
-        state = *blk_at(blocks, gx, gy, x, i);
-        if(bitfield_count(state) == 1){
-            mask |= state;
-        }
-    }
-
-    return mask;
-}
-
-static inline uint64_t
-grd_filter_mask_for_row(wfc_blocks_ptr blocks,
-                           uint32_t gy, uint32_t y)
-{
-    uint64_t mask = 0;
-    for (uint32_t i = 0; i < blocks->grid_side; i++) {
-        mask |= blk_filter_mask_for_row(blocks, i, gy, y);
-    }
-    
-    return mask;
-}
-
-static inline uint64_t
-grd_filter_mask_for_column(wfc_blocks_ptr blocks,
-                        uint32_t gx, uint32_t x)
-{
-    uint64_t mask = 0;
-    for (uint32_t i = 0; i < blocks->grid_side; i++) {
-        mask |= blk_filter_mask_for_column(blocks, gx, i, x);
-    }
-
-    return mask;
-}
-
-static inline uint64_t
-blk_filter_mask_for_block(wfc_blocks_ptr blocks,
-                          uint32_t gy, uint32_t gx)
-{
-    uint64_t mask = 0;
-    uint64_t state = 0;
-    for (uint32_t i = 0; i < blocks->block_side; i++) {
-        for (uint32_t j = 0; j < blocks->block_side; j++) {
-            state = *blk_at(blocks, gx, gy, i, j);
-            if(bitfield_count(state) == 1){
-                mask |= state;
-            }
-        }
-    }
-
-    return mask;
-}
-
-bool
-grd_check_error_in_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
-{
-    uint64_t mask = grd_filter_mask_for_column(blocks, gx, x);
-    uint64_t state = 0;
-    for (uint32_t i = 0; i < blocks->grid_side; i++) {
-        for (uint32_t j = 0; j < blocks->block_side; j++) {
-            state = *blk_at(blocks, gx, i, x, j);
-            if (bitfield_count(state) == 1) {
-                if (bitfield_count(state|mask) != bitfield_count(mask)+1) {
-                    // printf("Col : i: %u, j: %u, x: %u, y: %u, gx: %u, gy: %u\n", i, j, x, y, gx, gy);
-                    if(i != gy && j != y) {
-                        return true;
-                    }
-                }   
-            }
-        }
-    }
-  
-    return false;
-}
-
-bool
-grd_check_error_in_row(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
-{
-    uint64_t mask = grd_filter_mask_for_row(blocks, gy, y);
-    uint64_t state = 0;
-    for (uint32_t i = 0; i < blocks->grid_side; i++) {
-        for (uint32_t j = 0; j < blocks->block_side; j++) {
-            state = *blk_at(blocks, i, gy, j, y);
-            if (bitfield_count(state) == 1) {
-                if (bitfield_count(state|mask) != bitfield_count(mask)+1) {
-                    // printf("Row : i: %u, j: %u, x: %u, y: %u, gx: %u, gy: %u\n", i, j, x, y, gx, gy);
-                    if(i != gx && j != x) {
-                        return true;
-                    }
-                }   
-            }
-        }
-    }
-
-    return false;
-}
-
-bool
-grd_check_error_in_block(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
-{
-    uint64_t mask = blk_filter_mask_for_block(blocks, gx, gy);
-    uint64_t state = 0;
-    for (uint32_t i = 0; i < blocks->grid_side; i++) {
-        for (uint32_t j = 0; j < blocks->grid_side; j++) {
-            for (uint32_t bi = 0; bi < blocks->block_side; bi++) {
-                for (uint32_t bj = 0; bj < blocks->block_side; bj++) {
-                    state = *blk_at(blocks, i, j, bi, bj);
-                    if (bitfield_count(state) == 1) {
-                        if (bitfield_count(state|mask) != bitfield_count(mask)+1) {
-                            // printf("Block : i: %u, j: %u, bi: %u, bj: %u, x: %u, y: %u, gx: %u, gy: %u\n", i, j, bi, bj, x, y, gx, gy);
-                            if(i != gx && j != gy && bi != x && bj != y) {
-                                return true;
-                            }
-                        }   
-                    }
-                }
-            }
-        }
-    }
-
-    return false;
-}
+// static inline uint64_t
+// blk_filter_mask_for_row(wfc_blocks_ptr blocks,
+//                            uint32_t gx, uint32_t gy, uint32_t y)
+// {
+//     uint64_t mask = 0;
+//     uint64_t state = 0;
+//     for (uint32_t i = 0; i < blocks->block_side; i++) {
+//         state = *blk_at(blocks, gx, gy, i, y);
+//         if(bitfield_count(state) == 1){
+//             mask |= state;
+//         }
+//     }
+//
+//     return mask;
+// }
+//
+// static inline uint64_t
+// blk_filter_mask_for_column(wfc_blocks_ptr blocks,
+//                             uint32_t gx, uint32_t gy, uint32_t x)
+// {
+//     uint64_t mask = 0;
+//     uint64_t state = 0;
+//     for (uint32_t i = 0; i < blocks->block_side; i++) {
+//         state = *blk_at(blocks, gx, gy, x, i);
+//         if(bitfield_count(state) == 1){
+//             mask |= state;
+//         }
+//     }
+//
+//     return mask;
+// }
+//
+// static inline uint64_t
+// grd_filter_mask_for_row(wfc_blocks_ptr blocks,
+//                            uint32_t gy, uint32_t y)
+// {
+//     uint64_t mask = 0;
+//     for (uint32_t i = 0; i < blocks->grid_side; i++) {
+//         mask |= blk_filter_mask_for_row(blocks, i, gy, y);
+//     }
+//     
+//     return mask;
+// }
+//
+// static inline uint64_t
+// grd_filter_mask_for_column(wfc_blocks_ptr blocks,
+//                         uint32_t gx, uint32_t x)
+// {
+//     uint64_t mask = 0;
+//     for (uint32_t i = 0; i < blocks->grid_side; i++) {
+//         mask |= blk_filter_mask_for_column(blocks, gx, i, x);
+//     }
+//
+//     return mask;
+// }
+//
+// static inline uint64_t
+// blk_filter_mask_for_block(wfc_blocks_ptr blocks,
+//                           uint32_t gy, uint32_t gx)
+// {
+//     uint64_t mask = 0;
+//     uint64_t state = 0;
+//     for (uint32_t i = 0; i < blocks->block_side; i++) {
+//         for (uint32_t j = 0; j < blocks->block_side; j++) {
+//             state = *blk_at(blocks, gx, gy, i, j);
+//             if(bitfield_count(state) == 1){
+//                 mask |= state;
+//             }
+//         }
+//     }
+//
+//     return mask;
+// }
+//
+// bool
+// grd_check_error_in_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
+// {
+//     uint64_t mask = grd_filter_mask_for_column(blocks, gx, x);
+//     uint64_t state = 0;
+//     for (uint32_t i = 0; i < blocks->grid_side; i++) {
+//         for (uint32_t j = 0; j < blocks->block_side; j++) {
+//             state = *blk_at(blocks, gx, i, x, j);
+//             if (bitfield_count(state) == 1) {
+//                 if (bitfield_count(state|mask) != bitfield_count(mask)+1) {
+//                     // printf("Col : i: %u, j: %u, x: %u, y: %u, gx: %u, gy: %u\n", i, j, x, y, gx, gy);
+//                     if(i != gy && j != y) {
+//                         return true;
+//                     }
+//                 }   
+//             }
+//         }
+//     }
+//   
+//     return false;
+// }
+//
+// bool
+// grd_check_error_in_row(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
+// {
+//     uint64_t mask = grd_filter_mask_for_row(blocks, gy, y);
+//     uint64_t state = 0;
+//     for (uint32_t i = 0; i < blocks->grid_side; i++) {
+//         for (uint32_t j = 0; j < blocks->block_side; j++) {
+//             state = *blk_at(blocks, i, gy, j, y);
+//             if (bitfield_count(state) == 1) {
+//                 if (bitfield_count(state|mask) != bitfield_count(mask)+1) {
+//                     // printf("Row : i: %u, j: %u, x: %u, y: %u, gx: %u, gy: %u\n", i, j, x, y, gx, gy);
+//                     if(i != gx && j != x) {
+//                         return true;
+//                     }
+//                 }   
+//             }
+//         }
+//     }
+//
+//     return false;
+// }
+//
+// bool
+// grd_check_error_in_block(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
+// {
+//     uint64_t mask = blk_filter_mask_for_block(blocks, gx, gy);
+//     uint64_t state = 0;
+//     for (uint32_t i = 0; i < blocks->grid_side; i++) {
+//         for (uint32_t j = 0; j < blocks->grid_side; j++) {
+//             for (uint32_t bi = 0; bi < blocks->block_side; bi++) {
+//                 for (uint32_t bj = 0; bj < blocks->block_side; bj++) {
+//                     state = *blk_at(blocks, i, j, bi, bj);
+//                     if (bitfield_count(state) == 1) {
+//                         if (bitfield_count(state|mask) != bitfield_count(mask)+1) {
+//                             // printf("Block : i: %u, j: %u, bi: %u, bj: %u, x: %u, y: %u, gx: %u, gy: %u\n", i, j, bi, bj, x, y, gx, gy);
+//                             if(i != gx && j != gy && bi != x && bj != y) {
+//                                 return true;
+//                             }
+//                         }   
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//
+//     return false;
+// }
 
 bool
 blk_propagate(wfc_blocks_ptr blocks,
@@ -330,40 +330,11 @@ blk_propagate(wfc_blocks_ptr blocks,
               uint64_t collapsed, uint32_t * stack_cells, uint32_t * stack_size)
 {
     bool changed = false;
-    uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blk_size; i++) {
-        uint64_t idx = gx * blocks->grid_side * blk_size + gy * blk_size + i;
-        uint8_t entropy = entropy_compute(blocks->states[idx]);
-        // if the cell is not collapsed yet
-        if (entropy > 1) {
-            blocks->states[idx] &= ~(collapsed);
-            changed = true;
-            // if the new entropy is 1 add the cell to the stack to propagate it later
-            entropy = entropy_compute(blocks->states[idx]);
-            if (entropy == 1) {
-                stack_cells[*stack_size] = idx;
-                (*stack_size)++;
-            } else if (entropy == 0) {
-                fprintf(stderr, "error in block propagation in block (%u, %u) at %u, %u\n", gx, gy, i % blocks->block_side, i / blocks->block_side);
-                exit(EXIT_FAILURE);
-            }
-        }
-    }
+    // uint32_t blk_size = blocks->block_side*blocks->block_side;
+    for (uint32_t y = 0; y < blocks->block_side; y++) {
+        for (uint32_t x = 0; x < blocks->block_side; x++) {
 
-    return changed;
-}
-
-bool
-grd_propagate_row(wfc_blocks_ptr blocks,
-                  uint32_t gx, uint32_t gy, uint32_t x, uint32_t y,
-                  uint64_t collapsed, uint32_t * stack_cells, uint32_t * stack_size)
-
-{
-    bool changed = false;
-    uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blocks->grid_side; i++) {
-        for (int j = 0; j < blocks->block_side; j++) {
-            uint64_t idx = gx * blocks->grid_side * blk_size + i * blk_size + x * blocks->block_side + j;
+            uint64_t idx = idx_at(blocks, gx, gy, x, y);
             uint8_t entropy = entropy_compute(blocks->states[idx]);
             // if the cell is not collapsed yet
             if (entropy > 1) {
@@ -372,10 +343,45 @@ grd_propagate_row(wfc_blocks_ptr blocks,
                 // if the new entropy is 1 add the cell to the stack to propagate it later
                 entropy = entropy_compute(blocks->states[idx]);
                 if (entropy == 1) {
-                    stack_cells[*stack_size] = idx;
+                    stack_cells[*stack_size] = (uint32_t)idx;
                     (*stack_size)++;
                 } else if (entropy == 0) {
-                    fprintf(stderr, "error in row propagation in block (%u, %u) at %u, %u\n", gx, gy, x, y);
+                    fprintf(stderr, "error in block propagation in block (%u, %u) at %u, %u\n",
+                            gy, gx, y, x);
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+    }
+
+    return changed;
+}
+
+bool
+grd_propagate_column(wfc_blocks_ptr blocks,
+                  uint32_t gx, uint32_t __, uint32_t x, uint32_t _,
+                  uint64_t collapsed, uint32_t * stack_cells, uint32_t * stack_size)
+
+{
+    bool changed = false;
+    // uint32_t blk_size = blocks->block_side*blocks->block_side;
+    for (uint32_t gy = 0; gy < blocks->grid_side; gy++) {
+        for (uint32_t y = 0; y < blocks->block_side; y++) {
+            uint64_t idx = idx_at(blocks, gx, gy, x, y);
+
+            uint8_t entropy = entropy_compute(blocks->states[idx]);
+            // if the cell is not collapsed yet
+            if (entropy > 1) {
+                blocks->states[idx] &= ~(collapsed);
+                changed = true;
+                // if the new entropy is 1 add the cell to the stack to propagate it later
+                entropy = entropy_compute(blocks->states[idx]);
+                if (entropy == 1) {
+                    stack_cells[*stack_size] = (uint32_t)idx;
+                    (*stack_size)++;
+                } else if (entropy == 0) {
+                    fprintf(stderr, "error in row propagation in block (%u, %u) at %u, %u\n",
+                            gy, gx, y, x);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -387,14 +393,15 @@ grd_propagate_row(wfc_blocks_ptr blocks,
 
 
 bool
-grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
-                     uint32_t x, uint32_t y, uint64_t collapsed, uint32_t * stack_cells, uint32_t * stack_size)
+grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
+                     uint32_t _, uint32_t y, uint64_t collapsed, uint32_t * stack_cells, uint32_t * stack_size)
 {
     bool changed = false;
     uint32_t blk_size = blocks->block_side*blocks->block_side;
-    for (int i = 0; i < blocks->grid_side; i++) {
-        for (int j = 0; j < blocks->block_side; j++) {
-            uint64_t idx = i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y;
+    for (uint32_t gx = 0; gx < blocks->grid_side; gx++) {
+        for (uint32_t x = 0; x < blocks->block_side; x++) {
+            // uint64_t idx = i * blocks->grid_side * blk_size + gy * blk_size + j * blocks->block_side + y;
+            uint64_t idx = idx_at(blocks, gx, gy, x, y);
             uint8_t entropy = entropy_compute(blocks->states[idx]);
             // if the cell is not collapsed yet
             if (entropy > 1) {
@@ -403,10 +410,11 @@ grd_propagate_column(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy,
                 // if the new entropy is 1 add the cell to the stack to propagate it later
                 entropy = entropy_compute(blocks->states[idx]);
                 if (entropy == 1) {
-                    stack_cells[*stack_size] = idx;
+                    stack_cells[*stack_size] = (uint32_t)idx;
                     (*stack_size)++;
                 } else if (entropy == 0) {
-                    fprintf(stderr, "error in column propagation in block (%u, %u) at %u, %u\n", gx, gy, x, y);
+                    fprintf(stderr, "error in column propagation in block (%u, %u) at %u, %u\n",
+                            gy, gx, y, x);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -433,11 +441,11 @@ grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, u
     
     while (stack_size > 0) {
 
-        // printf("stack (%d): ", stack_size);
-        // for (int i = 0; i < stack_size; i++) {
-        //     printf("%d ", stack_cells[i]);
-        // }
-        // printf("\n");
+        printf("stack (%d): ", stack_size);
+        for (int i = 0; i < stack_size; i++) {
+            printf("%d ", stack_cells[i]);
+        }
+        printf("\n");
 
         // pop the cell from the stack
         uint64_t cell = stack_cells[0];
@@ -447,17 +455,17 @@ grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, u
         stack_size--;
 
         // compute the coordinates of the new cell
-        x = (cell / blocks->block_side) % blocks->block_side;
-        y = cell % blocks->block_side;
-        gx = cell / (blocks->grid_side * blocks->block_side * blocks->block_side);
-        gy = (cell / (blocks->block_side * blocks->block_side)) % blocks->grid_side;
+        y = (cell / blocks->block_side) % blocks->block_side;
+        x = cell % blocks->block_side;
+        gy = cell / (blocks->grid_side * blocks->block_side * blocks->block_side);
+        gx = (cell / (blocks->block_side * blocks->block_side)) % blocks->grid_side;
 
         // get the new collapsed state
         collapsed = *blk_at(blocks, gx, gy, x, y);
 
-        // printf("collapsed (stack): %lu (", collapsed);
-        // printBinary2(collapsed);
-        // printf(") at : %lu, %lu, %lu, %lu\n", gx, gy, x, y);
+        printf("collapsed (stack): %lu (", collapsed);
+        printBinary2(collapsed);
+        printf(") at : %lu, %lu, %lu, %lu\n", gy, gx, y, x);
 
         // propagate the new cell
         changed |= blk_propagate(blocks, gx, gy, collapsed, stack_cells, &stack_size);
