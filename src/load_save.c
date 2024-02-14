@@ -2,6 +2,7 @@
 
 #include "wfc.h"
 #include "bitfield.h"
+#include "utils.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -47,18 +48,18 @@ next(char *restrict str, char sep)
     return ret;
 }
 
-static inline wfc_blocks *
-safe_malloc(uint64_t blkcnt)
-{
-    uint64_t size   = sizeof(wfc_blocks) + sizeof(uint64_t) * blkcnt;
-    wfc_blocks *ret = (wfc_blocks *)malloc(size);
-    if (ret != NULL) {
-        return ret;
-    } else {
-        fprintf(stderr, "failed to malloc %zu bytes\n", size);
-        exit(EXIT_FAILURE);
-    }
-}
+// static inline wfc_blocks *
+// safe_malloc(uint64_t blkcnt)
+// {
+//     uint64_t size   = sizeof(wfc_blocks) + sizeof(uint64_t) * blkcnt;
+//     wfc_blocks *ret = (wfc_blocks *)malloc(size);
+//     if (ret != NULL) {
+//         return ret;
+//     } else {
+//         fprintf(stderr, "failed to malloc %zu bytes\n", size);
+//         exit(EXIT_FAILURE);
+//     }
+// }
 
 static inline uint32_t
 to_u32(const char *string)
@@ -110,15 +111,19 @@ wfc_load(uint64_t seed, const char *path)
 
         if (line[0] == 's') {
             blkcnt          = block_side * block_side;
-            ret             = safe_malloc(blkcnt + wfc_control_states_count(1, block_side));
+            // ret             = safe_malloc(blkcnt + wfc_control_states_count(1, block_side));
+            ret             = super_safe_malloc(1, block_side);
             ret->block_side = (uint8_t)block_side;
             ret->grid_side  = 1u;
+            ret->seed = seed;
         } else if (line[0] == 'g') {
             blkcnt          = block_side * block_side;
             blkcnt          = blkcnt * blkcnt;
-            ret             = safe_malloc(blkcnt + wfc_control_states_count(block_side, block_side));
+            // ret             = safe_malloc(blkcnt + wfc_control_states_count(block_side, block_side));
+            ret             = super_safe_malloc(block_side, block_side);
             ret->block_side = (uint8_t)block_side;
             ret->grid_side  = (uint8_t)block_side;
+            ret->seed = seed;
         } else {
             fprintf(stderr, "invalid header of .dat file\n");
             exit(EXIT_FAILURE);
@@ -128,17 +133,17 @@ wfc_load(uint64_t seed, const char *path)
         exit(EXIT_FAILURE);
     }
 
-    {
-        uint64_t mask       = 0;
-        const uint64_t base = wfc_control_states_count(ret->grid_side, ret->block_side);
-        for (uint8_t i = 0; i < ret->block_side * ret->block_side; i += 1) {
-            mask = bitfield_set(mask, i);
-        }
-        ret->seed = seed;
-        for (uint64_t i = 0; i < blkcnt + base; i += 1) {
-            ret->states[i] = mask;
-        }
-    }
+    // TODO
+    // {
+    //     uint64_t mask       = 0;
+    //     const uint64_t base = wfc_control_states_count(ret->grid_side, ret->block_side);
+    //     for (uint8_t i = 0; i < ret->block_side * ret->block_side; i += 1) {
+    //         mask = bitfield_set(mask, i);
+    //     }
+    //     for (uint64_t i = 0; i < blkcnt + base; i += 1) {
+    //         ret->states[i] = mask;
+    //     }
+    // }
 
     while ((read = getline(&line, &len, f)) != -1) {
         trim(line);

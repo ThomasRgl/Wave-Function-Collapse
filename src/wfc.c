@@ -3,7 +3,7 @@
 
 #include "wfc.h"
 #include "bitfield.h"
-// #include "utils.h" 
+#include "utils.h" 
 #include "md5.h"
 
 #include <stdio.h>
@@ -72,26 +72,30 @@ entropy_compute(uint64_t state)
 void
 wfc_clone_into(wfc_blocks_ptr *const restrict ret_ptr, uint64_t seed, const wfc_blocks_ptr blocks)
 {
-    const uint64_t grid_size  = blocks->grid_side;
-    const uint64_t block_size = blocks->block_side;
+    const uint64_t gs  = blocks->grid_side;
+    const uint64_t bs = blocks->block_side;
     wfc_blocks_ptr ret        = *ret_ptr;
 
-    const uint64_t size = (wfc_control_states_count(grid_size, block_size) * sizeof(uint64_t)) +
-                          (grid_size * grid_size * block_size * block_size * sizeof(uint64_t)) +
-                          sizeof(wfc_blocks);
-
+    // TODO
     if (NULL == ret) {
-        if (NULL == (ret = malloc(size))) {
+        if (NULL == (ret = super_safe_malloc(gs, bs)) ) {
             fprintf(stderr, "failed to clone blocks structure\n");
             exit(EXIT_FAILURE);
         }
-    } else if (grid_size != ret->grid_side || block_size != ret->block_side) {
+    } else if ( gs != ret->grid_side || bs != ret->block_side) {
         fprintf(stderr, "size mismatch!\n");
         exit(EXIT_FAILURE);
     }
-
-    memcpy(ret, blocks, size);
+    
+    
+    memcpy(ret->states, blocks->states, gs * gs * bs * bs * sizeof(uint64_t) );
+    memcpy(ret->row_masks, blocks->row_masks, gs * bs * sizeof(uint64_t) );
+    memcpy(ret->col_masks, blocks->col_masks, gs * bs * sizeof(uint64_t) );
+    memcpy(ret->blk_masks, blocks->blk_masks, gs * gs * sizeof(uint64_t) );
     ret->seed = seed;
+    ret->block_side = (uint8_t)bs;
+    ret->grid_side = (uint8_t)gs;
+
     *ret_ptr       = ret;
 }
 

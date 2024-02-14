@@ -20,7 +20,7 @@ solve_cpu(wfc_blocks_ptr blocks)
     grd_print(NULL, blocks);
     getchar();
 
-    forever {
+    jusqua_la_retraite {
         bool changed = false;
 
         printf("loc be like   : [gy, gx] [y, x]\n" );
@@ -55,7 +55,7 @@ solve_cpu(wfc_blocks_ptr blocks)
         // grd_propagate_column(blocks, gx, gy, x, y, collapsed_state);
         // grd_propagate_row(blocks, gx, gy, x, y, collapsed_state);
 
-        grd_propagate_all(blocks, gx, gy, x, y, collapsed_state);
+        changed = grd_propagate_all(blocks, gx, gy, x, y, collapsed_state);
  
 
         // 1. collapse
@@ -65,7 +65,7 @@ solve_cpu(wfc_blocks_ptr blocks)
         grd_print(NULL, blocks);
 
 
-        changed = true;
+        // changed = true;
 
         iteration += 1;
         getchar();
