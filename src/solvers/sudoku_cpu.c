@@ -20,6 +20,8 @@ solve_cpu(wfc_blocks_ptr blocks)
     grd_print(NULL, blocks);
     getchar();
 
+    bool success = false;
+
     jusqua_la_retraite {
         bool changed = false;
 
@@ -43,19 +45,19 @@ solve_cpu(wfc_blocks_ptr blocks)
             }
         }
         printf(" choose loc :   [%d, %d] : [%d, %d] = %d\n", gy, gx, y, x, min_entropy );
-       
-        // collapse state
-        uint64_t * state = blk_at(blocks, gx, gy, x, y);
-        uint64_t collapsed_state = entropy_collapse_state(
-            *state, gx, gy, x, y, blocks->seed, iteration);
-        *state = collapsed_state;
-        
-        // propagate
-        // blk_propagate(blocks, gx, gy, collapsed_state);
-        // grd_propagate_column(blocks, gx, gy, x, y, collapsed_state);
-        // grd_propagate_row(blocks, gx, gy, x, y, collapsed_state);
+      
+        if( min_entropy != UINT8_MAX ){
+            // collapse state
+            uint64_t * state = blk_at(blocks, gx, gy, x, y);
+            uint64_t collapsed_state = entropy_collapse_state(
+                *state, gx, gy, x, y, blocks->seed, iteration);
+            *state = collapsed_state;
 
-        changed = grd_propagate_all(blocks, gx, gy, x, y, collapsed_state);
+            changed = grd_propagate_all(blocks, gx, gy, x, y, collapsed_state);
+        }
+        else{
+            success = true;
+        }
  
 
         // 1. collapse
@@ -102,5 +104,5 @@ solve_cpu(wfc_blocks_ptr blocks)
     // } 
     grd_print(NULL, blocks);
 
-    return false;
+    return success;
 }

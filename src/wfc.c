@@ -334,7 +334,14 @@ blk_propagate(wfc_blocks_ptr blocks,
               uint64_t collapsed, uint32_t * stack_cells, uint32_t * stack_size)
 {
     bool changed = false;
-    // uint32_t blk_size = blocks->block_side*blocks->block_side;
+
+    if ( (blocks->blk_masks[gy * blocks->block_side + gx] & collapsed) == 0) {
+        fprintf(stderr, "error in (mask) block propagation in block (%u, %u)\n", gy, gx);
+        exit(EXIT_FAILURE);
+    }
+
+    blocks->blk_masks[gy * blocks->block_side + gx] &= ~collapsed;
+
     for (uint32_t y = 0; y < blocks->block_side; y++) {
         for (uint32_t x = 0; x < blocks->block_side; x++) {
 
@@ -368,7 +375,14 @@ grd_propagate_column(wfc_blocks_ptr blocks,
 
 {
     bool changed = false;
-    // uint32_t blk_size = blocks->block_side*blocks->block_side;
+    
+    if ( (blocks->col_masks[gx * blocks->block_side + x] & collapsed) == 0) {
+        fprintf(stderr, "error in (mask) column propagation in column block %u in column %u\n", gx, x);
+        exit(EXIT_FAILURE);
+    }
+
+    blocks->col_masks[gx * blocks->block_side + x] &= ~collapsed;
+
     for (uint32_t gy = 0; gy < blocks->grid_side; gy++) {
         for (uint32_t y = 0; y < blocks->block_side; y++) {
             uint64_t idx = idx_at(blocks, gx, gy, x, y);
@@ -384,7 +398,7 @@ grd_propagate_column(wfc_blocks_ptr blocks,
                     stack_cells[*stack_size] = (uint32_t)idx;
                     (*stack_size)++;
                 } else if (entropy == 0) {
-                    fprintf(stderr, "error in row propagation in block (%u, %u) at %u, %u\n",
+                    fprintf(stderr, "error in column propagation in block (%u, %u) at %u, %u\n",
                             gy, gx, y, x);
                     exit(EXIT_FAILURE);
                 }
@@ -401,6 +415,14 @@ grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
                      uint32_t _, uint32_t y, uint64_t collapsed, uint32_t * stack_cells, uint32_t * stack_size)
 {
     bool changed = false;
+
+    if ( (blocks->row_masks[gy * blocks->block_side + y] & collapsed) == 0) {
+        fprintf(stderr, "error in (mask) row propagation in row block %u in row %u\n", gy, y);
+        exit(EXIT_FAILURE);
+    }
+
+    blocks->row_masks[gy * blocks->block_side + y] &= ~collapsed;
+
     uint32_t blk_size = blocks->block_side*blocks->block_side;
     for (uint32_t gx = 0; gx < blocks->grid_side; gx++) {
         for (uint32_t x = 0; x < blocks->block_side; x++) {
@@ -417,7 +439,7 @@ grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
                     stack_cells[*stack_size] = (uint32_t)idx;
                     (*stack_size)++;
                 } else if (entropy == 0) {
-                    fprintf(stderr, "error in column propagation in block (%u, %u) at %u, %u\n",
+                    fprintf(stderr, "error in row propagation in block (%u, %u) at %u, %u\n",
                             gy, gx, y, x);
                     exit(EXIT_FAILURE);
                 }
