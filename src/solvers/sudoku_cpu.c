@@ -18,12 +18,12 @@ solve_cpu(wfc_blocks_ptr blocks)
     } row_changes[blocks->grid_side];
 
     grd_print(NULL, blocks);
-    getchar();
+    // getchar();
 
     bool success = false;
 
     jusqua_la_retraite {
-        bool changed = false;
+        // bool changed = false;
 
         printf("loc be like   : [gy, gx] [y, x]\n" );
         // choose min entropy 
@@ -53,10 +53,14 @@ solve_cpu(wfc_blocks_ptr blocks)
                 *state, gx, gy, x, y, blocks->seed, iteration);
             *state = collapsed_state;
 
-            changed = grd_propagate_all(blocks, gx, gy, x, y, collapsed_state);
+            bool no_error = grd_propagate_all(blocks, gx, gy, x, y, collapsed_state);
+
+            if(!no_error)
+                break;
         }
         else{
             success = true;
+            break;
         }
  
 
@@ -70,15 +74,15 @@ solve_cpu(wfc_blocks_ptr blocks)
         // changed = true;
 
         iteration += 1;
-        getchar();
-        if (!changed)
-            break;
+        // getchar();
+        // if (!changed)
+        //     break;
     }
     // entropy_location loc = min_entropy( blocks );
-    entropy_location min_loc;
-    min_loc.entropy = UINT8_MAX;
-    min_loc.location.x = 0 ; 
-    min_loc.location.y = 0;
+    // entropy_location min_loc;
+    // min_loc.entropy = UINT8_MAX;
+    // min_loc.location.x = 0 ; 
+    // min_loc.location.y = 0;
 
     // for( uint32_t gy = 0; gy < blocks->grid_side; gy++ ){
     //     for( uint32_t gx = 0; gx < blocks->grid_side; gx++ ){
