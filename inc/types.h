@@ -35,6 +35,14 @@ typedef struct {
 //     // uint64_t states[];
 //     uint64_t *states;
 // } wfc_blocks;
+
+typedef struct {
+    uint32_t gx;
+    uint32_t gy;
+    uint32_t x;
+    uint32_t y;
+} vec4;
+
 typedef struct {
     uint64_t seed;
     uint8_t block_side;
@@ -43,6 +51,9 @@ typedef struct {
     uint64_t * row_masks;
     uint64_t * col_masks;
     uint64_t * blk_masks;
+
+    vec4 * stack_cells;
+    uint32_t stack_size;
 
     uint64_t *states;
 } wfc_blocks;
