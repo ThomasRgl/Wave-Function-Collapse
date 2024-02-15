@@ -17,7 +17,7 @@ solve_cpu(wfc_blocks_ptr blocks)
         uint64_t state;
     } row_changes[blocks->grid_side];
 
-    grd_print(NULL, blocks);
+    // grd_print(NULL, blocks);
     // getchar();
 
     bool success = false;
@@ -25,7 +25,7 @@ solve_cpu(wfc_blocks_ptr blocks)
     jusqua_la_retraite {
         // bool changed = false;
 
-        printf("loc be like   : [gy, gx] [y, x]\n" );
+        // printf("loc be like   : [gy, gx] [y, x]\n" );
         // choose min entropy 
         uint8_t min_entropy = UINT8_MAX;
         uint32_t x = 0 ; 
@@ -44,7 +44,7 @@ solve_cpu(wfc_blocks_ptr blocks)
                 }
             }
         }
-        printf(" choose loc :   [%d, %d] : [%d, %d] = %d\n", gy, gx, y, x, min_entropy );
+        // printf(" choose loc :   [%d, %d] : [%d, %d] = %d\n", gy, gx, y, x, min_entropy );
       
         if( min_entropy != UINT8_MAX ){
             // collapse state
@@ -68,7 +68,7 @@ solve_cpu(wfc_blocks_ptr blocks)
         // 2. propagate
         // 3. check error
 
-        grd_print(NULL, blocks);
+        // grd_print(NULL, blocks);
 
 
         // changed = true;
@@ -78,35 +78,8 @@ solve_cpu(wfc_blocks_ptr blocks)
         // if (!changed)
         //     break;
     }
-    // entropy_location loc = min_entropy( blocks );
-    // entropy_location min_loc;
-    // min_loc.entropy = UINT8_MAX;
-    // min_loc.location.x = 0 ; 
-    // min_loc.location.y = 0;
-
-    // for( uint32_t gy = 0; gy < blocks->grid_side; gy++ ){
-    //     for( uint32_t gx = 0; gx < blocks->grid_side; gx++ ){
-    //         entropy_location loc = blk_min_entropy(blocks, gx, gy);
-    //         if( loc.entropy < min_loc.entropy )
-    //             min_loc = loc;
-    //     }
-    // }
-    // uint64_t * state = choose_and_collapse(blocks, 0);
-
-    // *blk_at(ret, gx, gy, x, y) = collapsed;
-   
-
-    // entropy_collapse_state(state, )
      
-
-    // for (uint32_t i = 0; i < 3; i++) {
-    //     for (uint32_t j = 0; j < 3; j++) {
-    //         entropy_location loc = blk_min_entropy(blocks, i, j);
-    //         printf("min entropy blk (%u; %u) : [%u; %u] = %u\n",
-    //                i, j, loc.location.x, loc.location.y, loc.entropy );
-    //     }
-    // } 
-    grd_print(NULL, blocks);
+    // grd_print(NULL, blocks);
 
     return success;
 }
