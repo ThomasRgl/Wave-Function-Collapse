@@ -22,8 +22,11 @@ super_safe_malloc( uint32_t gs, uint32_t bs)
     ret->row_masks = (uint64_t*) malloc( gs * bs * sizeof(uint64_t) );
     ret->col_masks = (uint64_t*) malloc( gs * bs * sizeof(uint64_t) );
     ret->blk_masks = (uint64_t*) malloc( gs * gs * sizeof(uint64_t) );
+    ret->stack_cells = (vec4*) malloc( (state_count-1) * sizeof(vec4) );
 
-    uint64_t mask       = 0;
+    ret->stack_size = 0;
+
+    uint64_t mask = 0;
     for (uint8_t i = 0; i < bs * bs; i += 1) {
         mask = bitfield_set(mask, i);
     }
@@ -38,16 +41,14 @@ super_safe_malloc( uint32_t gs, uint32_t bs)
 
     for (uint64_t i = 0; i < gs * gs; i += 1) 
         ret->blk_masks[i] = mask;
- 
-    
 
-    return ret;
-    
+    return ret; 
 }
 
 static inline void
 super_safe_free( wfc_blocks * blocks )
 {
+    free(blocks->stack_cells);
     free(blocks->row_masks);
     free(blocks->col_masks);
     free(blocks->blk_masks);
