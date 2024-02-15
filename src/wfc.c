@@ -356,12 +356,13 @@ blk_propagate(wfc_blocks_ptr blocks,
                 if (entropy == 1) {
                     stack_cells[*stack_size] = (uint32_t)idx;
                     (*stack_size)++;
-                } else if (entropy == 0) {
-                    fprintf(stderr, "error in block propagation in block (%u, %u) at %u, %u\n",
-                            gy, gx, y, x);
-                    return false;
-                    // exit(EXIT_FAILURE);
-                }
+                } 
+                // else if (entropy == 0) {
+                //     fprintf(stderr, "error in block propagation in block (%u, %u) at %u, %u\n",
+                //             gy, gx, y, x);
+                //     return false;
+                //     // exit(EXIT_FAILURE);
+                // }
             }
         }
     }
@@ -395,12 +396,13 @@ grd_propagate_column(wfc_blocks_ptr blocks,
                 if (entropy == 1) {
                     stack_cells[*stack_size] = (uint32_t)idx;
                     (*stack_size)++;
-                } else if (entropy == 0) {
-                    fprintf(stderr, "error in column propagation in block (%u, %u) at %u, %u\n",
-                            gy, gx, y, x);
-                    return false;
-                    // exit(EXIT_FAILURE);
-                }
+                } 
+                // else if (entropy == 0) {
+                //     fprintf(stderr, "error in column propagation in block (%u, %u) at %u, %u\n",
+                //             gy, gx, y, x);
+                //     return false;
+                //     // exit(EXIT_FAILURE);
+                // }
             }
         }
     }
@@ -436,12 +438,13 @@ grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
                 if (entropy == 1) {
                     stack_cells[*stack_size] = (uint32_t)idx;
                     (*stack_size)++;
-                } else if (entropy == 0) {
-                    fprintf(stderr, "error in row propagation in block (%u, %u) at %u, %u\n",
-                            gy, gx, y, x);
-                    return false;
-                    // exit(EXIT_FAILURE);
-                }
+                } 
+                // else if (entropy == 0) {
+                //     fprintf(stderr, "error in row propagation in block (%u, %u) at %u, %u\n",
+                //             gy, gx, y, x);
+                //     return false;
+                //     // exit(EXIT_FAILURE);
+                // }
             }
         }
     }

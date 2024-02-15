@@ -54,7 +54,9 @@ main(int argc, char **argv)
         else if (solved) {
             __atomic_fetch_or((int*)quit_ptr, 1, __ATOMIC_SEQ_CST);
             fputs("\nsuccess with result:\n", stdout);
-            abort();
+            // super_safe_free(blocks);
+            // super_safe_free(init);
+            // abort();
         }
 
         else if (!*quit_ptr) {
