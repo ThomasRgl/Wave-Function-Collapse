@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 
-#include "wfc.h"
+#include "wfc.cuh"
 
 #include <string.h>
 #include <strings.h>

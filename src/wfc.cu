@@ -1,10 +1,10 @@
 #include <stdint.h>
 #define _GNU_SOURCE
 
-#include "wfc.h"
-#include "bitfield.h"
-#include "utils.h" 
-#include "md5.h"
+#include "wfc.cuh"
+#include "bitfield.cuh"
+#include "utils.cuh" 
+#include "md5.cuh"
 
 #include <stdio.h>
 #include <stdlib.h>

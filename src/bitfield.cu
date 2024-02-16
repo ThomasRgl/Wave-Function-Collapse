@@ -1,4 +1,4 @@
-#include "bitfield.h"
+#include "bitfield.cuh"
 
 /// Copy-Pasta from internet
 static inline uint64_t

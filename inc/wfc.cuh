@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "types.cuh"
 
 #include <stdbool.h>
 #include <inttypes.h>

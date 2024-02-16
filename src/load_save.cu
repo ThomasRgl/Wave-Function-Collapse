@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 
-#include "wfc.h"
-#include "bitfield.h"
-#include "utils.h"
+#include "wfc.cuh"
+#include "bitfield.cuh"
+#include "utils.cuh"
 
 #include <ctype.h>
 #include <errno.h>

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include "md5.h"
+#include "md5.cuh"
 
 /// Size of the MD5 buffer
 #define MD5_BUFFER ((uint32_t)1024)

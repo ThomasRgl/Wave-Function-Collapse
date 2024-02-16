@@ -1,8 +1,8 @@
-#include "utils.h"
+#include "utils.cuh"
 #define _GNU_SOURCE
 
-#include "bitfield.h"
-#include "wfc.h"
+#include "bitfield.cuh"
+#include "wfc.cuh"
 
 #include <float.h>
 #include <stdio.h>

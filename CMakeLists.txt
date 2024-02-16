@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
-project(WaveFunctionCollapse VERSION 0.1 LANGUAGES C)
-cmake_policy(SET CMP0009 NEW) # Do not follow symlinks with GLOB_RECURSE
+project(WaveFunctionCollapse VERSION 0.1 LANGUAGES CUDA )
+# cmake_policy(SET CMP0009 NEW) # Do not follow symlinks with GLOB_RECURSE
 
 STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
 GET_FILENAME_COMPONENT(PARENTDIR ${CMAKE_SOURCE_DIR} PATH)
@@ -21,13 +21,13 @@ set(CMAKE_COLOR_DIAGNOSTICS         ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS   ON) # Always to that...
 set(THREADS_PREFER_PTHREAD_FLAG     ON) # Pthread ftw
 
-file(GLOB_RECURSE WaveFunctionCollapse_SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
+file(GLOB_RECURSE WaveFunctionCollapse_SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu")
 file(GLOB_RECURSE WaveFunctionCollapse_INC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/inc/*.h")
 
 add_executable(wfc ${WaveFunctionCollapse_SRC} ${WaveFunctionCollapse_INC})
 target_include_directories(wfc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 target_link_libraries(wfc  PRIVATE -pthread -fopenmp -lm)
-target_compile_options(wfc PRIVATE -g -O3 -march=native -pthread -fopenmp -std=c17)
+target_compile_options(wfc PRIVATE -g -O3 -march=native -pthread -fopenmp )
 target_compile_options(wfc PRIVATE
     -Wall -Wextra -pedantic #-Werror
     -Wshadow
@@ -38,16 +38,16 @@ target_compile_options(wfc PRIVATE
     -Wformat=2
 )
 
-if(${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
-    target_compile_options(wfc PRIVATE
-        -Weverything
-        -Wno-vla
-        -Wno-unsafe-buffer-usage
-        -Wno-declaration-after-statement
-    )
-elseif(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-    target_compile_options(wfc PRIVATE
-        -Wno-switch
-        -Wno-unsafe-buffer-usage
-    )
-endif()
+# if(${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
+#     target_compile_options(wfc PRIVATE
+#         -Weverything
+#         -Wno-vla
+#         -Wno-unsafe-buffer-usage
+#         -Wno-declaration-after-statement
+#     )
+# elseif(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
+#     target_compile_options(wfc PRIVATE
+#         -Wno-switch
+#         -Wno-unsafe-buffer-usage
+#     )
+# endif()
