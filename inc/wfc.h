@@ -67,7 +67,8 @@ void printBinary2(uint64_t number) ;
 void blk_print(FILE *const, const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
 void grd_print(FILE *const, const wfc_blocks_ptr block);
 
-// Entropy functions
+// Entropy functionsvec4
+vec4 grd_min_entropy(const wfc_blocks_ptr blocks );
 entropy_location blk_min_entropy(const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
 uint64_t * choose_and_collapse(const wfc_blocks_ptr blocks, uint64_t ite);
 uint8_t entropy_compute(uint64_t);
