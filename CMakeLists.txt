@@ -34,8 +34,8 @@ target_compile_options(wfc PRIVATE
     -Wshadow
     -Wcast-align -Wconversion -Wsign-conversion -Wdouble-promotion
     #-Wunused-variable
-    -Wmisleading-indentation
-    -Wnull-dereference
+    # -Wmisleading-indentation
+    # -Wnull-dereference
     -Wformat=2
 )
 

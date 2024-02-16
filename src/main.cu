@@ -1,8 +1,8 @@
-#include "utils.cuh"
 // #define _GNU_SOURCE
 
 #include "bitfield.cuh"
 #include "wfc.cuh"
+#include "utils.cuh"
 
 #include <float.h>
 #include <stdio.h>
@@ -47,7 +47,9 @@ main(int argc, char **argv)
                 break;
             }
 
-            wfc_clone_into(&blocks, next_seed, init);
+            // wfc_clone_into(&blocks, next_seed, init);
+            wfc_blocks * d_blocks = cudaCloneToDevice( init );
+            
             const bool solved = args.solver(blocks);
             __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
 
@@ -60,10 +62,7 @@ main(int argc, char **argv)
             else if (solved) {
                 __atomic_fetch_or((int*)quit_ptr, 1, __ATOMIC_SEQ_CST);
                 fprintf(stdout,"\nT%d : success with result:\n ", omp_get_thread_num());
-                grd_print(NULL, blocks);
-                // super_safe_free(blocks);
-                // super_safe_free(init);
-                // abort();
+                // grd_print(NULL, blocks);
             }
 
             else if (!*quit_ptr) {
@@ -71,7 +70,8 @@ main(int argc, char **argv)
                         ((double)(*iterations_ptr) / (double)(max_iterations)) * 100.0,
                         omp_get_wtime() - start);
             }
-            super_safe_free(blocks);
+            // super_safe_free(blocks);
+            super_safe_Cudafree(blocks);
             blocks = NULL;
         }
         #pragma omp barrier

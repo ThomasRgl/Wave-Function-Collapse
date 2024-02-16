@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <stdio.h>
 #define _gnu_source
 
