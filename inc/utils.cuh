@@ -1,7 +1,7 @@
 #pragma once
 
-#include "types.h"
-#include "bitfield.h"
+#include "types.cuh"
+#include "bitfield.cuh"
 
 #include <stdio.h>
 #include <stdlib.h>

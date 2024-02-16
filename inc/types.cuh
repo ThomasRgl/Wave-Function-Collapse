@@ -3,6 +3,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#define restrict  
+
 /// Opaque type to store the seeds to try for the solving process. You may push to it and pop from
 /// it. You may not try to index it manually or free this structure, it will be automatically freed
 /// when no more items are present inside it.

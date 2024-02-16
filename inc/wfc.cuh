@@ -87,18 +87,14 @@ bool grd_check_error_in_row(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32
 bool grd_check_error_in_block(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t);
 
 // Solvers
-bool solve_cpu(wfc_blocks_ptr);
-bool solve_openmp(wfc_blocks_ptr);
-bool solve_target(wfc_blocks_ptr);
-#if defined(WFC_CUDA)
+// bool solve_cpu(wfc_blocks_ptr);
+// bool solve_openmp(wfc_blocks_ptr);
+// bool solve_target(wfc_blocks_ptr);
 bool solve_cuda(wfc_blocks_ptr);
-#endif
 
 static const wfc_solver solvers[] = {
-    { "cpu", solve_cpu },
-    { "omp", solve_openmp },
-    { "target", solve_target },
-#if defined(WFC_CUDA)
+    // { "cpu", solve_cpu },
+    // { "omp", solve_openmp },
+    // { "target", solve_target },
     { "cuda", solve_cuda },
-#endif
 };

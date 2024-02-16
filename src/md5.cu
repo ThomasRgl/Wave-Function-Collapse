@@ -75,12 +75,14 @@ md5(uint8_t *const restrict M, uint32_t len, uint8_t *restrict digest)
 {
     const uint32_t buflen  = (len > MD5_BUFFER) ? MD5_BUFFER : len;
     struct md5_ctx context = {
+        .regs = {
+            .A = 0x67452301,
+            .B = 0xefcdab89,
+            .C = 0x98badcfe,
+            .D = 0x10325476,
+        },
         .size   = 0,
         .bits   = 0,
-        .regs.A = 0x67452301,
-        .regs.B = 0xefcdab89,
-        .regs.C = 0x98badcfe,
-        .regs.D = 0x10325476,
     };
 
     do {

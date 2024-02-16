@@ -1,5 +1,5 @@
 #include "utils.cuh"
-#define _GNU_SOURCE
+// #define _GNU_SOURCE
 
 #include "bitfield.cuh"
 #include "wfc.cuh"
