@@ -60,8 +60,8 @@ solve_cpu(wfc_blocks_ptr blocks)
         iteration += 1;
     }
      
-    grd_print(NULL, blocks);
-    getchar();
+    // grd_print(NULL, blocks);
+    // getchar();
 
     return success;
 }

@@ -120,10 +120,10 @@ grd_min_entropy(const wfc_blocks_ptr blocks )
         }
     }
 
-    printf("choosed min entropy (%u; %u) : [%u; %u] = %u ",
-                   gy, gx, y, x, min_entropy );
-    printBinary2(min_entropy);
-    printf("\n");
+    // printf("choosed min entropy (%u; %u) : [%u; %u] = %u ",
+    //                gy, gx, y, x, min_entropy );
+    // printBinary2(min_entropy);
+    // printf("\n");
 
 
 
