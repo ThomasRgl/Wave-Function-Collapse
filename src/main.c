@@ -60,6 +60,7 @@ main(int argc, char **argv)
             else if (solved) {
                 __atomic_fetch_or((int*)quit_ptr, 1, __ATOMIC_SEQ_CST);
                 fprintf(stdout,"\nT%d : success with result:\n ", omp_get_thread_num());
+                grd_print(NULL, blocks);
                 // super_safe_free(blocks);
                 // super_safe_free(init);
                 // abort();
