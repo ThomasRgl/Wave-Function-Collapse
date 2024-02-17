@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 /// Set the specific bit in an integer.
+__device__ __host__
 static inline uint64_t
 bitfield_set(uint64_t flag, uint8_t index)
 {
@@ -13,6 +14,7 @@ bitfield_set(uint64_t flag, uint8_t index)
 }
 
 /// Get the specific bit in an integer. If the index doesn't exists returns 0.
+__device__ __host__
 static inline uint64_t
 bitfield_get(uint64_t flag, uint8_t index)
 {
@@ -20,6 +22,7 @@ bitfield_get(uint64_t flag, uint8_t index)
 }
 
 /// Count the number of set bits in an integer.
+__device__ __host__
 static inline uint8_t
 bitfield_count(uint64_t x)
 {
@@ -35,7 +38,9 @@ bitfield_count(uint64_t x)
 }
 
 /// Get the integer with only the nth setted bit of the said integer.
+__device__ __host__
 uint64_t bitfield_only_nth_set(uint64_t, uint8_t);
 
 /// Prints the bitfield to the file descriptor.
+__device__ __host__
 void bitfield_print(FILE *const, uint64_t);

@@ -141,7 +141,7 @@ super_safe_Cudafree( wfc_blocks * d_blocks )
 
 }
 static inline wfc_blocks *
-cudaCloneToDevice( wfc_blocks * blocks)
+cudaCloneToDevice( wfc_blocks * blocks, uint64_t seed)
 {
     wfc_blocks * d_blocks;
     cudaMalloc((void**)&d_blocks, sizeof(wfc_blocks));
@@ -153,24 +153,25 @@ cudaCloneToDevice( wfc_blocks * blocks)
 
     wfc_blocks * buffer = (wfc_blocks *) malloc(sizeof(wfc_blocks));
     memcpy( buffer, blocks, sizeof(wfc_blocks));
-   checkCudaErrors(cudaMalloc((void**)&buffer->states    , state_count * sizeof(uint64_t) ));
-   checkCudaErrors(cudaMalloc((void**)&buffer->row_masks , gs * bs * sizeof(uint64_t) ));
-   checkCudaErrors(cudaMalloc((void**)&buffer->col_masks , gs * bs * sizeof(uint64_t) ));
-   checkCudaErrors(cudaMalloc((void**)&buffer->blk_masks , gs * gs * sizeof(uint64_t) ));
-   checkCudaErrors(cudaMalloc((void**)&buffer->stack_cells, (state_count-1) * sizeof(vec4) ));
+    buffer->seed = seed;
 
+    checkCudaErrors(cudaMalloc((void**)&buffer->states    , state_count * sizeof(uint64_t) ));
+    checkCudaErrors(cudaMalloc((void**)&buffer->row_masks , gs * bs * sizeof(uint64_t) ));
+    checkCudaErrors(cudaMalloc((void**)&buffer->col_masks , gs * bs * sizeof(uint64_t) ));
+    checkCudaErrors(cudaMalloc((void**)&buffer->blk_masks , gs * gs * sizeof(uint64_t) ));
+    checkCudaErrors(cudaMalloc((void**)&buffer->stack_cells, (state_count-1) * sizeof(vec4) ));
 
+    checkCudaErrors(cudaMemcpy(buffer->states,    blocks->states,    state_count * sizeof(uint64_t), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(buffer->row_masks, blocks->row_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(buffer->col_masks, blocks->col_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(buffer->blk_masks, blocks->blk_masks, gs * gs * sizeof(uint64_t), cudaMemcpyHostToDevice));
 
     checkCudaErrors(cudaMemcpy(d_blocks, buffer, sizeof(wfc_blocks), cudaMemcpyHostToDevice));
 
-	checkCudaErrors(cudaGetLastError());
+    checkCudaErrors(cudaGetLastError());
     printf("addr block : %p\n", d_blocks);
 
-    //    cudaMemcpy(d_blocks->states,    blocks->states,    state_count * sizeof(uint64_t), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_blocks->row_masks, blocks->row_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_blocks->col_masks, blocks->col_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_blocks->blk_masks, blocks->blk_masks, gs * gs * sizeof(uint64_t), cudaMemcpyHostToDevice);
-
+    //
     return d_blocks;    
 }
 

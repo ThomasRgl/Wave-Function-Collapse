@@ -55,13 +55,14 @@ struct md5_ctx {
 
 // local functions
 // clang-format off
-static void md5_update (struct md5_ctx *restrict);
-static void md5_final  (uint8_t *restrict, struct md5_ctx *restrict);
-static void md5_encode (uint8_t *restrict, struct md5_ctx *restrict);
-static void md5_addsize(uint8_t *restrict, uint32_t, uint32_t);
+__device__ static void md5_update (struct md5_ctx *restrict);
+__device__ static void md5_final  (uint8_t *restrict, struct md5_ctx *restrict);
+__device__ static void md5_encode (uint8_t *restrict, struct md5_ctx *restrict);
+__device__ static void md5_addsize(uint8_t *restrict, uint32_t, uint32_t);
 // clang-format on
 
 // clang-format off
+__device__ __host__
 static unsigned char MD5_PADDING[64] = { /* 512 Bits */
     0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -70,7 +71,7 @@ static unsigned char MD5_PADDING[64] = { /* 512 Bits */
 };
 // clang-format on
 
-void
+__device__ void
 md5(uint8_t *const restrict M, uint32_t len, uint8_t *restrict digest)
 {
     const uint32_t buflen  = (len > MD5_BUFFER) ? MD5_BUFFER : len;
@@ -95,7 +96,7 @@ md5(uint8_t *const restrict M, uint32_t len, uint8_t *restrict digest)
 }
 
 /// uint32_t is bytes while the size at the end of the message is in bits...
-static void
+__device__ static void
 md5_addsize(uint8_t *restrict M, uint32_t index, uint32_t oldlen)
 {
     assert(((index * 8) % 512) == 448); /* If padding is not done then exit */
@@ -112,7 +113,7 @@ md5_addsize(uint8_t *restrict M, uint32_t index, uint32_t oldlen)
     M[index++] = 0;
 }
 
-static void
+__device__ static void
 md5_update(struct md5_ctx *restrict context)
 {
     uint8_t buffer[64] = { 0 }; /* 512 bits */
@@ -128,7 +129,7 @@ md5_update(struct md5_ctx *restrict context)
     context->size -= i;
 }
 
-static void
+__device__ static void
 md5_final(uint8_t *restrict digest, struct md5_ctx *restrict context)
 {
     uint8_t buffer[64] = { 0 }; /* 512 bits */
@@ -162,7 +163,7 @@ md5_final(uint8_t *restrict digest, struct md5_ctx *restrict context)
     // clang-format on
 }
 
-static void
+__device__ static void
 md5_encode(uint8_t *restrict buffer, struct md5_ctx *restrict context)
 {
     uint32_t a = context->regs.A,

@@ -48,7 +48,7 @@ main(int argc, char **argv)
             }
 
             // wfc_clone_into(&blocks, next_seed, init);
-            blocks = cudaCloneToDevice( init );
+            blocks = cudaCloneToDevice( init, next_seed );
             
             const bool solved = args.solver(blocks);
             __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
