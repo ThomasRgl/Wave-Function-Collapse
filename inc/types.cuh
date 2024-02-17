@@ -49,6 +49,7 @@ typedef struct {
     uint64_t seed;
     uint8_t block_side;
     uint8_t grid_side;
+    bool solved;
 
     uint64_t * row_masks;
     uint64_t * col_masks;
