@@ -17,6 +17,7 @@ main(int argc, char **argv)
 
     wfc_args args             = wfc_parse_args(argc, argv);
     const wfc_blocks_ptr init = wfc_load(0, args.data_file);
+    const wfc_blocks_ptr d_init = cudaCloneToDevice( init, 0 );
 
     bool quit                = false;
     uint64_t iterations      = 0;
@@ -29,12 +30,17 @@ main(int argc, char **argv)
     const double start            = omp_get_wtime();
     
     int max_threads = args.parallel > omp_get_max_threads() ? omp_get_max_threads() : args.parallel;
+    wfc_blocks_ptr * blocks_list = (wfc_blocks_ptr *) malloc( max_threads * sizeof(wfc_blocks_ptr));
+    for (int i = 0; i < max_threads; i++) { 
+        blocks_list[i] = cudaCloneToDevice( init, 0 );
+    }
+    
     
 #pragma omp parallel num_threads(max_threads)
     {
         while (!*quit_ptr) {
 
-            wfc_blocks_ptr blocks    = NULL;
+            wfc_blocks_ptr blocks = blocks_list[omp_get_thread_num()];
 
             pthread_mutex_lock(&seed_mtx);
             uint64_t next_seed       = 0;
@@ -48,9 +54,9 @@ main(int argc, char **argv)
             }
 
             // wfc_clone_into(&blocks, next_seed, init);
-            blocks = cudaCloneToDevice( init, next_seed );
+            // blocks = cudaCloneToDevice( init, next_seed );
             
-            const bool solved = args.solver(blocks);
+            const bool solved = args.solver(blocks, d_init, next_seed);
             __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
 
             if (solved && args.output_folder != NULL) {
@@ -71,12 +77,16 @@ main(int argc, char **argv)
                         omp_get_wtime() - start);
             }
             // super_safe_free(blocks);
-            super_safe_Cudafree(blocks);
             blocks = NULL;
         }
         #pragma omp barrier
     }
 
+    for (int i = 0; i < max_threads; i++)
+        super_safe_Cudafree(blocks_list[i]);
+    free(blocks_list);
+
+    super_safe_Cudafree(d_init);
     super_safe_free(init);
 
     return 0;

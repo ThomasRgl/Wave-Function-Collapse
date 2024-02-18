@@ -6,16 +6,31 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 
 // #if !defined(WFC_CUDA)
 // #error "WDC_CUDA should be defined..."
 // #endif
 __global__ void
-solve_cuda_device(wfc_blocks_ptr blocks)
+solve_cuda_device(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed)
 {
+    uint32_t gs = init->grid_side;
+    uint32_t bs = init->block_side;
+    const uint64_t state_count = gs * gs * bs * bs;
+
+    blocks->block_side = bs; 
+    blocks->grid_side = gs; 
+    blocks->seed = seed; 
+    memcpy(blocks->states,    init->states,    state_count * sizeof(uint64_t) );
+    memcpy(blocks->row_masks, init->row_masks, gs * bs * sizeof(uint64_t) );
+    memcpy(blocks->col_masks, init->col_masks, gs * bs * sizeof(uint64_t) );
+    memcpy(blocks->blk_masks, init->blk_masks, gs * gs * sizeof(uint64_t) );
+
+
+
     uint64_t iteration  = 0;
-    const uint64_t seed = blocks->seed;
+
     // struct {
     //     uint32_t gy, x, y, _1;
     //     uint64_t state;
@@ -95,7 +110,7 @@ solve_cuda_device(wfc_blocks_ptr blocks)
 }
 
 bool
-solve_cuda(wfc_blocks_ptr blocks)
+solve_cuda(wfc_blocks_ptr blocks, wfc_blocks_ptr d_init, uint64_t seed)
 {
 
     // printf("solver: addr block : %p\n", blocks);
@@ -104,7 +119,8 @@ solve_cuda(wfc_blocks_ptr blocks)
     dim3 dimBlock(3, 3, 1);
 
     checkCudaErrors(cudaGetLastError());
-    solve_cuda_device<<<dimGrid, dimBlock>>>(blocks);
+
+    solve_cuda_device<<<dimGrid, dimBlock>>>(blocks, d_init, seed);
 
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());

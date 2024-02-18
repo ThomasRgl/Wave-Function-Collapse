@@ -154,6 +154,9 @@ cudaCloneToDevice( wfc_blocks * blocks, uint64_t seed)
     wfc_blocks * buffer = (wfc_blocks *) malloc(sizeof(wfc_blocks));
     memcpy( buffer, blocks, sizeof(wfc_blocks));
     buffer->seed = seed;
+    buffer->grid_side = gs;
+    buffer->block_side = bs;
+    buffer->solved = false;
 
     checkCudaErrors(cudaMalloc((void**)&buffer->states    , state_count * sizeof(uint64_t) ));
     checkCudaErrors(cudaMalloc((void**)&buffer->row_masks , gs * bs * sizeof(uint64_t) ));
@@ -165,7 +168,7 @@ cudaCloneToDevice( wfc_blocks * blocks, uint64_t seed)
     checkCudaErrors(cudaMemcpy(buffer->row_masks, blocks->row_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(buffer->col_masks, blocks->col_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(buffer->blk_masks, blocks->blk_masks, gs * gs * sizeof(uint64_t), cudaMemcpyHostToDevice));
-
+    
     checkCudaErrors(cudaMemcpy(d_blocks, buffer, sizeof(wfc_blocks), cudaMemcpyHostToDevice));
 
     checkCudaErrors(cudaGetLastError());
