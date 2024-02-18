@@ -145,7 +145,7 @@ cudaCloneToDevice( wfc_blocks * blocks, uint64_t seed)
 {
     wfc_blocks * d_blocks;
     cudaMalloc((void**)&d_blocks, sizeof(wfc_blocks));
-    printf("clone: addr block : %p\n", d_blocks);
+    // printf("clone: addr block : %p\n", d_blocks);
 
     uint32_t gs = blocks->grid_side;
     uint32_t bs = blocks->block_side;
@@ -172,7 +172,7 @@ cudaCloneToDevice( wfc_blocks * blocks, uint64_t seed)
     checkCudaErrors(cudaMemcpy(d_blocks, buffer, sizeof(wfc_blocks), cudaMemcpyHostToDevice));
 
     checkCudaErrors(cudaGetLastError());
-    printf("addr block : %p\n", d_blocks);
+    // printf("addr block : %p\n", d_blocks);
 
     //
     return d_blocks;    
