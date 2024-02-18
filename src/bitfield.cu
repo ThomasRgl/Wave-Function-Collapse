@@ -1,6 +1,7 @@
-#include "bitfield.h"
+#include "bitfield.cuh"
 
 /// Copy-Pasta from internet
+__device__ __host__
 static inline uint64_t
 find_nth_set_bit(uint64_t mask, uint64_t n)
 {
@@ -52,6 +53,7 @@ find_nth_set_bit(uint64_t mask, uint64_t n)
 }
 
 uint64_t
+__device__ __host__
 bitfield_only_nth_set(uint64_t x, uint8_t n)
 {
     return 1llu << find_nth_set_bit(x, n);

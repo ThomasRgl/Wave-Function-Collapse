@@ -3,6 +3,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#define restrict  
+
 /// Opaque type to store the seeds to try for the solving process. You may push to it and pop from
 /// it. You may not try to index it manually or free this structure, it will be automatically freed
 /// when no more items are present inside it.
@@ -47,6 +49,7 @@ typedef struct {
     uint64_t seed;
     uint8_t block_side;
     uint8_t grid_side;
+    bool solved;
 
     uint64_t * row_masks;
     uint64_t * col_masks;

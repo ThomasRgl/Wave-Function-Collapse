@@ -1,7 +1,7 @@
-#define _GNU_SOURCE
+// #define _GNU_SOURCE
 
-#include "bitfield.h"
-#include "wfc.h"
+#include "bitfield.cuh"
+#include "wfc.cuh"
 
 #include <omp.h>
 

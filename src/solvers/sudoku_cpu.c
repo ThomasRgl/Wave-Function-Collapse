@@ -1,8 +1,9 @@
+#include <cstdlib>
 #include <stdio.h>
 #define _gnu_source
 
-#include "bitfield.h"
-#include "wfc.h"
+#include "bitfield.cuh"
+#include "wfc.cuh"
 
 #include <omp.h>
 

@@ -1,8 +1,8 @@
-#define _GNU_SOURCE
-
-#include "wfc.h"
-#include "bitfield.h"
-#include "utils.h"
+// #define _GNU_SOURCE
+//
+#include "wfc.cuh"
+#include "bitfield.cuh"
+#include "utils.cuh"
 
 #include <ctype.h>
 #include <errno.h>
@@ -168,8 +168,9 @@ wfc_load(uint64_t seed, const char *path)
         uint64_t collapsed = bitfield_set(0, state-1);
         // printf("collapsed (input): %lu (", state);
         // printBinary2(collapsed);
-        // printf(") at : %u, %u, %u, %u\n", gy, gx, y, x);
-        grd_propagate_all(ret, gx, gy, x, y, collapsed);
+        // printf(") at : [%u, %u] [%u, %u]\n", gy, gx, y, x);
+        host_grd_propagate_all(ret, gx, gy, x, y, collapsed);
+        // grd_print(NULL, ret);
     }
 
     free(line);

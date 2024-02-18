@@ -1,6 +1,6 @@
-#define _GNU_SOURCE
+// #define _GNU_SOURCE
 
-#include "wfc.h"
+#include "wfc.cuh"
 
 #include <string.h>
 #include <strings.h>
@@ -9,11 +9,14 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
+typedef enum {
+    seed_item_single = 1,
+    seed_item_tuple  = 2,
+} type_t;
+
 typedef struct {
-    enum {
-        seed_item_single = 1,
-        seed_item_tuple  = 2,
-    } type;
+    
+    type_t type;
 
     union {
         /// Only when `.type == seed_item_single`
@@ -55,7 +58,7 @@ seeds_list_push_item(seeds_list *restrict list, seed_item item)
     // First call, need to allocate the thing.
     if (NULL == list) {
         static const uint64_t DEFAULT_SIZE = 10;
-        list                               = malloc(sizeof(seeds_list) + DEFAULT_SIZE * sizeof(seed_item));
+        list                               =(seeds_list*) malloc(sizeof(seeds_list) + DEFAULT_SIZE * sizeof(seed_item));
         if (NULL == list) {
             fprintf(stderr, "failed to allocate seeds list\n");
             exit(EXIT_FAILURE);
@@ -69,7 +72,7 @@ seeds_list_push_item(seeds_list *restrict list, seed_item item)
     else if (list->size <= list->count) {
         static const uint64_t GROWTH_FACTOR = 2;
         const uint64_t new_list_size        = list->size * GROWTH_FACTOR;
-        list                                = realloc(list, sizeof(seeds_list) + new_list_size * sizeof(seed_item));
+        list                                = (seeds_list*)realloc(list, sizeof(seeds_list) + new_list_size * sizeof(seed_item));
         if (NULL == list) {
             fprintf(stderr, "failed to realloc the seeds list\n");
             exit(EXIT_FAILURE);
@@ -152,7 +155,7 @@ try_next_seed(seeds_list *restrict *const seeds, uint64_t *restrict return_seed)
     return UINT64_MAX != *return_seed;
 }
 
-_Noreturn static inline void
+static inline void
 print_help(const char *exec)
 {
     fprintf(stdout, "usage: %s [-h] [-o folder/] [-l solver] [-p count] [-s seeds...] <path/to/file.data>\n", exec);
@@ -218,9 +221,12 @@ wfc_parse_args(int argc, char **argv)
                     fprintf(stderr, "invalid range: %u >= %u\n", from, to);
                     exit(EXIT_FAILURE);
                 }
+                seed_item petite_graine;
+                petite_graine.type = seed_item_tuple;
+                petite_graine.content.from = from;
+                petite_graine.content.to = to;
                 seeds = seeds_list_push_item(
-                    seeds, (seed_item){ .type    = seed_item_tuple,
-                                        .content = { .from = from, .to = to } });
+                    seeds, petite_graine);
             } else {
                 fprintf(stderr, "invalid range delimiter: '%c'\n", *end);
                 exit(EXIT_FAILURE);
@@ -277,8 +283,8 @@ wfc_parse_args(int argc, char **argv)
 
     return (wfc_args){
         .data_file     = argv[optind],
-        .seeds         = seeds,
         .output_folder = output,
+        .seeds         = seeds,
         .parallel      = parallel,
         .solver        = (NULL == solver) ? solvers[0].function : solver,
     };

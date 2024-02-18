@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "types.cuh"
 
 #include <stdbool.h>
 #include <inttypes.h>
@@ -28,13 +28,13 @@ void wfc_clone_into(wfc_blocks_ptr *const restrict, uint64_t, const wfc_blocks_p
 /// Save the grid to a folder by creating a new file or overwrite it, on error kills the program.
 void wfc_save_into(const wfc_blocks_ptr, const char data[], const char folder[]);
 
-static inline uint64_t
+__host__ __device__  static inline uint64_t
 wfc_control_states_count(uint64_t grid_size, uint64_t block_size)
 {
     return grid_size * grid_size * block_size * block_size;
 }
 
-static inline uint64_t 
+__host__ __device__ static inline uint64_t 
 idx_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
 {
     uint64_t idx = gy * blocks->grid_side * blocks->block_side * blocks->block_side +
@@ -42,14 +42,14 @@ idx_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
     return idx;
 }
 
-static inline uint64_t *
+__host__ __device__ static inline uint64_t *
 grd_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
 {
     uint64_t idx = idx_at(blocks, gx, gy, 0, 0);
     return &blocks->states[idx];
 }
 
-static inline uint64_t *
+__host__ __device__ static inline uint64_t *
 blk_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
 {
     uint64_t idx = idx_at(blocks, gx, gy, x, y);
@@ -61,44 +61,40 @@ blk_at(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y)
 
 
 
-void printBinary2(uint64_t number) ;
+__host__ __device__ void printBinary2(uint64_t number) ;
 
-// Printing functions
-void blk_print(FILE *const, const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
-void grd_print(FILE *const, const wfc_blocks_ptr block);
+// void blk_print(FILE *const, const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
+__host__ __device__ void grd_print(FILE *const, const wfc_blocks_ptr block);
 
 // Entropy functionsvec4
-vec4 grd_min_entropy(const wfc_blocks_ptr blocks );
-entropy_location blk_min_entropy(const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
-uint64_t * choose_and_collapse(const wfc_blocks_ptr blocks, uint64_t ite);
-uint8_t entropy_compute(uint64_t);
-uint64_t entropy_collapse_state(uint64_t, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t, uint64_t);
+__device__ vec4 grd_min_entropy(const wfc_blocks_ptr blocks );
+__device__ entropy_location blk_min_entropy(const wfc_blocks_ptr block, uint32_t gx, uint32_t gy);
+__host__ __device__ uint8_t entropy_compute(uint64_t);
+__device__ uint64_t entropy_collapse_state(uint64_t, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t, uint64_t);
 
 // Propagation functions
 
-bool grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y, uint64_t collapsed);
-bool blk_propagate(wfc_blocks_ptr, uint32_t, uint32_t, uint64_t);
-bool grd_propagate_column(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
-bool grd_propagate_row(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
+__host__ bool host_grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y, uint64_t collapsed);
+__host__ bool host_blk_propagate(wfc_blocks_ptr, uint32_t, uint32_t, uint64_t);
+__host__ bool host_grd_propagate_column(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
+__host__ bool host_grd_propagate_row(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
 
-// Check functions
-bool grd_check_error_in_column(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t);
-bool grd_check_error_in_row(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t);
-bool grd_check_error_in_block(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t);
+__device__  bool grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y, uint64_t collapsed);
+__device__  bool blk_propagate(wfc_blocks_ptr, uint32_t, uint32_t, uint64_t);
+__device__  bool grd_propagate_column(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
+__device__  bool grd_propagate_row(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
+
+
 
 // Solvers
-bool solve_cpu(wfc_blocks_ptr);
-bool solve_openmp(wfc_blocks_ptr);
-bool solve_target(wfc_blocks_ptr);
-#if defined(WFC_CUDA)
+// bool solve_cpu(wfc_blocks_ptr);
+// bool solve_openmp(wfc_blocks_ptr);
+// bool solve_target(wfc_blocks_ptr);
 bool solve_cuda(wfc_blocks_ptr);
-#endif
 
 static const wfc_solver solvers[] = {
-    { "cpu", solve_cpu },
-    { "omp", solve_openmp },
-    { "target", solve_target },
-#if defined(WFC_CUDA)
+    // { "cpu", solve_cpu },
+    // { "omp", solve_openmp },
+    // { "target", solve_target },
     { "cuda", solve_cuda },
-#endif
 };
