@@ -399,8 +399,9 @@ void grd_print(FILE *const file, const wfc_blocks_ptr block){
                 printf( "|");
                 for(uint32_t j = 0; j < bs; j++){
                     const uint64_t collapsed = *blk_at(block, i,ii,j,jj);
-                    if( bitfield_count(collapsed) == 1)
+                    if( bitfield_count(collapsed) == 1){
                         printf( "   %lu     ", (uint64_t)log2((double)collapsed)+1 );
+                    }
                     else
                         printBinary2(collapsed);
                     // printf( "   %lu     ", idx_at(block, i,ii,j,jj) );
