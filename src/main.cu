@@ -17,7 +17,7 @@ main(int argc, char **argv)
 
     wfc_args args             = wfc_parse_args(argc, argv);
     const wfc_blocks_ptr init = wfc_load(0, args.data_file);
-    const wfc_blocks_ptr d_init = cudaCloneToDevice( init, 0 );
+    const wfc_blocks_ptr d_init = cloneToDevice( init, 0 );
 
     bool quit                = false;
     uint64_t iterations      = 0;
@@ -32,7 +32,7 @@ main(int argc, char **argv)
     int max_threads = args.parallel > omp_get_max_threads() ? omp_get_max_threads() : args.parallel;
     wfc_blocks_ptr * blocks_list = (wfc_blocks_ptr *) malloc( max_threads * sizeof(wfc_blocks_ptr));
     for (int i = 0; i < max_threads; i++) { 
-        blocks_list[i] = cudaCloneToDevice( init, 0 );
+        blocks_list[i] = cloneToDevice( init, 0 );
     }
     
     
