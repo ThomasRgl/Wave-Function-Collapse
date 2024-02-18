@@ -27,17 +27,7 @@ solve_cuda_device(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed)
     memcpy(blocks->col_masks, init->col_masks, gs * bs * sizeof(uint64_t) );
     memcpy(blocks->blk_masks, init->blk_masks, gs * gs * sizeof(uint64_t) );
 
-
-
     uint64_t iteration  = 0;
-
-    // struct {
-    //     uint32_t gy, x, y, _1;
-    //     uint64_t state;
-    // } row_changes[blocks->grid_side];
-
-    // grd_print(NULL, blocks);
-    // getchar();
 
     bool success = false;
 
@@ -102,7 +92,7 @@ solve_cuda_device(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed)
     }
     
     if(success && threadIdx.x == 0 && threadIdx.y == 0){
-        grd_print(NULL, blocks);
+        // grd_print(NULL, blocks);
         blocks->solved = success; 
     }
     // getchar();
@@ -131,11 +121,18 @@ solve_cuda(wfc_blocks_ptr blocks, wfc_blocks_ptr d_init, uint64_t seed)
     wfc_blocks_ptr buffer = super_safe_malloc( 3, 3);
     cudaMemcpy(buffer, blocks, sizeof(wfc_blocks), cudaMemcpyDeviceToHost);
     cudaMemcpy(b->states, buffer->states, 3 * 3 * 3 * 3 * sizeof(uint64_t), cudaMemcpyDeviceToHost);
-    printf("hello world from Host, success ? : %u \n", b->solved);
+
     b->grid_side = 3;
     b->block_side = 3;
-    grd_print(NULL, b);
-    bool succes = b->solved;
+    bool succes = buffer->solved;
+    if( succes ){
+        printf("Host : success with seed : %lu\n\n", buffer->seed);
+        grd_print(NULL, b);
+    }
+    else{
+        printf("Host : failed\n");
+    }
+
     // super_safe_free(b);
     // super_safe_free(buffer);
     return succes;
