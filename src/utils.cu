@@ -1,5 +1,5 @@
-#include "types.cuh"
 #include "utils.cuh"
+#include "types.cuh"
 #include "bitfield.cuh"
 
 #include <cstdio>
@@ -75,43 +75,45 @@ super_safe_Cudafree( wfc_blocks * d_blocks )
     cudaFree(d_blocks);
 
 }
-wfc_blocks *
-cloneToDevice( wfc_blocks * blocks, uint64_t seed)
-{
-    wfc_blocks * d_blocks;
-    cudaMalloc((void**)&d_blocks, sizeof(wfc_blocks));
-    // printf("clone: addr block : %p\n", d_blocks);
+// wfc_blocks *
+// cloneToDevice( wfc_blocks * blocks, uint64_t seed)
+// {
+//     wfc_blocks * d_blocks;
+//     cudaMalloc((void**)&d_blocks, sizeof(wfc_blocks));
+//     // printf("clone: addr block : %p\n", d_blocks);
 
-    uint32_t gs = blocks->grid_side;
-    uint32_t bs = blocks->block_side;
-    const uint64_t state_count = gs * gs * bs * bs;
+//     uint32_t gs = blocks->grid_side;
+//     uint32_t bs = blocks->block_side;
+//     const uint64_t state_count = gs * gs * bs * bs;
 
-    wfc_blocks * buffer = (wfc_blocks *) malloc(sizeof(wfc_blocks));
-    memcpy( buffer, blocks, sizeof(wfc_blocks));
-    buffer->seed = seed;
-    buffer->grid_side = gs;
-    buffer->block_side = bs;
-    buffer->solved = false;
+//     wfc_blocks * buffer = (wfc_blocks *) malloc(sizeof(wfc_blocks));
+//     memcpy( buffer, blocks, sizeof(wfc_blocks));
+//     buffer->seed = seed;
+//     buffer->grid_side = gs;
+//     buffer->block_side = bs;
+//     buffer->solved = false;
 
-    checkCudaErrors(cudaMalloc((void**)&buffer->states    , state_count * sizeof(uint64_t) ));
-    checkCudaErrors(cudaMalloc((void**)&buffer->row_masks , gs * bs * sizeof(uint64_t) ));
-    checkCudaErrors(cudaMalloc((void**)&buffer->col_masks , gs * bs * sizeof(uint64_t) ));
-    checkCudaErrors(cudaMalloc((void**)&buffer->blk_masks , gs * gs * sizeof(uint64_t) ));
-    checkCudaErrors(cudaMalloc((void**)&buffer->stack_cells, (state_count-1) * sizeof(vec4) ));
+//     checkCudaErrors(cudaMalloc((void**)&buffer->states    , state_count * sizeof(uint64_t) ));
+//     checkCudaErrors(cudaMalloc((void**)&buffer->row_masks , gs * bs * sizeof(uint64_t) ));
+//     checkCudaErrors(cudaMalloc((void**)&buffer->col_masks , gs * bs * sizeof(uint64_t) ));
+//     checkCudaErrors(cudaMalloc((void**)&buffer->blk_masks , gs * gs * sizeof(uint64_t) ));
+//     checkCudaErrors(cudaMalloc((void**)&buffer->stack_cells, (state_count-1) * sizeof(vec4) ));
 
-    checkCudaErrors(cudaMemcpy(buffer->states,    blocks->states,    state_count * sizeof(uint64_t), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(buffer->row_masks, blocks->row_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(buffer->col_masks, blocks->col_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(buffer->blk_masks, blocks->blk_masks, gs * gs * sizeof(uint64_t), cudaMemcpyHostToDevice));
+//     checkCudaErrors(cudaMemcpy(buffer->states,    blocks->states,    state_count * sizeof(uint64_t), cudaMemcpyHostToDevice));
+//     checkCudaErrors(cudaMemcpy(buffer->row_masks, blocks->row_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
+//     checkCudaErrors(cudaMemcpy(buffer->col_masks, blocks->col_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));
+//     checkCudaErrors(cudaMemcpy(buffer->blk_masks, blocks->blk_masks, gs * gs * sizeof(uint64_t), cudaMemcpyHostToDevice));
     
-    checkCudaErrors(cudaMemcpy(d_blocks, buffer, sizeof(wfc_blocks), cudaMemcpyHostToDevice));
+//     checkCudaErrors(cudaMemcpy(d_blocks, buffer, sizeof(wfc_blocks), cudaMemcpyHostToDevice));
 
-    checkCudaErrors(cudaGetLastError());
-    // printf("addr block : %p\n", d_blocks);
+//     checkCudaErrors(cudaGetLastError());
 
-    //
-    return d_blocks;    
-}
+//     free(buffer);
+//     // printf("addr block : %p\n", d_blocks);
+
+//     //
+//     return d_blocks;    
+// }
 
 wfc_blocks * wfc_clone_HTD( wfc_blocks * src)
 {
@@ -146,6 +148,7 @@ wfc_blocks * wfc_clone_HTD( wfc_blocks * src)
     checkCudaErrors(cudaGetLastError());
     // printf("addr block : %p\n", d_blocks);
 
+    free(buffer);
     //
     return d_dst;    
 }
@@ -176,6 +179,7 @@ wfc_blocks * wfc_clone_DTH( wfc_blocks * d_src)
  
     checkCudaErrors(cudaGetLastError());
 
+    free(buffer);
     //
     return dst;    
 }

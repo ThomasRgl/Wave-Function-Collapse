@@ -45,13 +45,14 @@ wfc_blocks * super_safe_malloc( uint32_t gs, uint32_t bs);
 
 void super_safe_free( wfc_blocks * blocks );
 void super_safe_Cudafree( wfc_blocks * d_blocks );
-wfc_blocks * cloneToDevice( wfc_blocks * blocks, uint64_t seed);
+//wfc_blocks * cloneToDevice( wfc_blocks * blocks, uint64_t seed);
 
 
 wfc_blocks * wfc_clone_HTD( wfc_blocks * src);
 wfc_blocks * wfc_clone_DTH( wfc_blocks * d_src);
 
-void wfc_clone_DTD( wfc_blocks * d_dst, wfc_blocks * d_src, uint32_t gs, uint32_t bs);
+__device__
+void wfc_clone_DTD( wfc_blocks * d_dst, wfc_blocks * d_src );
 wfc_blocks * wfc_clone_HTH( wfc_blocks * dst, wfc_blocks * src);
 
 

@@ -414,7 +414,7 @@ void grd_print(FILE *const file, const wfc_blocks_ptr block){
                     const uint64_t collapsed = *blk_at(block, i,ii,j,jj);
                     if( bitfield_count(collapsed) == 1){
 
-                        printf( "    %lu    ", 
+                        printf( "    %2lu   ", 
                         #ifdef __CUDA_ARCH__
                         __ffsll(collapsed));
                         #else
