@@ -78,6 +78,7 @@ __host__ bool host_grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_
 __host__ bool host_blk_propagate(wfc_blocks_ptr, uint32_t, uint32_t, uint64_t);
 __host__ bool host_grd_propagate_column(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
 __host__ bool host_grd_propagate_row(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t);
+__host__ bool verify_block(wfc_blocks_ptr blocks );
 
 __device__  bool grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, uint32_t y, uint64_t collapsed);
 __device__  bool blk_propagate(wfc_blocks_ptr, uint32_t, uint32_t, uint64_t);

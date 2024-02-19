@@ -131,6 +131,7 @@ wfc_blocks * wfc_clone_HTD( wfc_blocks * src)
     buffer->grid_side = (uint8_t)gs;
     buffer->block_side = (uint8_t)bs;
     buffer->solved = false;
+    buffer->stack_size = 0;
 
     checkCudaErrors(cudaMalloc((void**)&buffer->states    , state_count * sizeof(uint64_t) ));
     checkCudaErrors(cudaMalloc((void**)&buffer->row_masks , gs * bs * sizeof(uint64_t) ));

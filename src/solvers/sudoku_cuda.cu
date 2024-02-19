@@ -19,9 +19,9 @@ solve_cuda_device(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed)
 
     wfc_clone_DTD( blocks, init);
 
-    uint32_t gs = blocks->grid_side;
-    uint32_t bs = blocks->block_side;
-    const uint64_t state_count = gs * gs * bs * bs;
+    // uint32_t gs = blocks->grid_side;
+    // uint32_t bs = blocks->block_side;
+    // const uint64_t state_count = gs * gs * bs * bs;
     blocks->seed = seed;
 
     uint64_t iteration  = 0;
@@ -81,11 +81,11 @@ solve_cuda_device(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed)
 
         iteration += 1;
 
-        // if( threadIdx.x == 0 && threadIdx.y == 0){
+        // if( threadIdx.x == 0 && threadIdx.y == 1){
         //     grd_print(NULL, blocks);
         // }
     }
-    
+        
     if(success && threadIdx.x == 0 && threadIdx.y == 0){
         // grd_print(NULL, blocks);
         blocks->solved = success; 
@@ -99,13 +99,14 @@ bool
 solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t seed)
 {
 
-    wfc_blocks buffer;
-    cudaMemcpy(&buffer, d_init, sizeof(wfc_blocks), cudaMemcpyDeviceToHost);
+    // wfc_blocks buffer;
+    // cudaMemcpy(&buffer, d_init, sizeof(wfc_blocks), cudaMemcpyDeviceToHost);
 
     // printf("solver: addr block : %p\n", blocks);
 
     dim3 dimGrid(1, 1, 1);
-    dim3 dimBlock(buffer.block_side, buffer.block_side, 1);
+    // dim3 dimBlock(buffer.block_side, buffer.block_side, 1);
+    dim3 dimBlock(6, 6, 1);
 
     checkCudaErrors(cudaGetLastError());
 
@@ -120,6 +121,7 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t seed)
     if( success ){
         printf("Host : success with seed : %lu\n\n", blocks->seed);
         grd_print(NULL, blocks);
+        verify_block(blocks);
     }
 
     super_safe_free(blocks);
