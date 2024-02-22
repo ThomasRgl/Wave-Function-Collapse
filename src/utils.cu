@@ -24,7 +24,7 @@ super_safe_malloc( uint32_t gs, uint32_t bs)
     ret->row_masks = (uint64_t*) malloc( gs * bs * sizeof(uint64_t) );
     ret->col_masks = (uint64_t*) malloc( gs * bs * sizeof(uint64_t) );
     ret->blk_masks = (uint64_t*) malloc( gs * gs * sizeof(uint64_t) );
-    ret->stack_cells = (vec4*) malloc( (state_count-1) * sizeof(vec4) );
+    ret->stack_cells = (vec4*) malloc( (state_count) * sizeof(vec4) );
 
     ret->stack_size = 0;
 
@@ -137,7 +137,7 @@ wfc_blocks * wfc_clone_HTD( wfc_blocks * src)
     checkCudaErrors(cudaMalloc((void**)&buffer->row_masks , gs * bs * sizeof(uint64_t) ));
     checkCudaErrors(cudaMalloc((void**)&buffer->col_masks , gs * bs * sizeof(uint64_t) ));
     checkCudaErrors(cudaMalloc((void**)&buffer->blk_masks , gs * gs * sizeof(uint64_t) ));
-    checkCudaErrors(cudaMalloc((void**)&buffer->stack_cells, (state_count-1) * sizeof(vec4) ));
+    checkCudaErrors(cudaMalloc((void**)&buffer->stack_cells, (state_count) * sizeof(vec4) ));
 
     checkCudaErrors(cudaMemcpy(buffer->states,    src->states,    state_count * sizeof(uint64_t), cudaMemcpyHostToDevice));
     checkCudaErrors(cudaMemcpy(buffer->row_masks, src->row_masks, gs * bs * sizeof(uint64_t), cudaMemcpyHostToDevice));

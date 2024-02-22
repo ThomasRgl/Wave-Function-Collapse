@@ -179,12 +179,16 @@ blk_propagate(wfc_blocks_ptr blocks,
     
     if ( (blocks->blk_masks[gy * blocks->block_side + gx] & collapsed) == 0) {
         // if (threadIdx.x == 0 && threadIdx.y == 0) {
+        //     printf("mask : %lu ;  collapsed : %lu\n", blocks->blk_masks[gy * blocks->block_side + gx], collapsed);
         //     printf("error in (mask) block propagation in block (%u, %u)\n", gy, gx);
         // }
         return true;
     }
+    __syncthreads();
 
-    blocks->blk_masks[gy * blocks->block_side + gx] &= ~collapsed;
+    if(x + y == 0) // if first thread
+        blocks->blk_masks[gy * blocks->block_side + gx] &= ~collapsed;
+    __syncthreads();
 
     uint64_t idx = idx_at(blocks, gx, gy, x, y);
     uint8_t entropy = entropy_compute(blocks->states[idx]);
@@ -200,7 +204,7 @@ blk_propagate(wfc_blocks_ptr blocks,
             // printf("T%u : add stack (%d)  (blk)\n", threadIdx.x + threadIdx.y * blockDim.x, blocks->stack_size);
         }
         else if (entropy == 0) {
-            // fprintf(stderr, "error in (mask) block propagation in block (%u, %u)\n", gy, gx);
+            // printf("error in (mask) block propagation in block (%u, %u)\n", gy, gx);
             return true;
         }
     }
@@ -223,8 +227,12 @@ grd_propagate_column(wfc_blocks_ptr blocks,
         // }
         return true;
     }
+    __syncthreads();
+   
+    if(gy + y == 0) // if first thread
+        blocks->col_masks[gx * blocks->block_side + x] &= ~collapsed;
 
-    blocks->col_masks[gx * blocks->block_side + x] &= ~collapsed;
+    __syncthreads();
 
     uint64_t idx = idx_at(blocks, gx, gy, x, y);
     uint8_t entropy = entropy_compute(blocks->states[idx]);
@@ -241,7 +249,7 @@ grd_propagate_column(wfc_blocks_ptr blocks,
             // printf("T%u : add stack (%d)  (col)\n", threadIdx.x + threadIdx.y * blockDim.x, blocks->stack_size);
         }
         else if (entropy == 0) {
-            // fprintf(stderr, "error in (mask) col propagation in block (%u, %u)\n", gy, gx);
+            // printf( "error in (mask) col propagation in block (%u, %u)\n", gy, gx);
             return true;
         }
     }
@@ -264,8 +272,11 @@ grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
         // }
         return true;
     }
+    __syncthreads();
 
-    blocks->row_masks[gy * blocks->block_side + y] &= ~collapsed;
+    if(x + gx == 0) // if first thread
+        blocks->row_masks[gy * blocks->block_side + y] &= ~collapsed;
+    __syncthreads();
 
     uint64_t idx = idx_at(blocks, gx, gy, x, y);
     uint8_t entropy = entropy_compute(blocks->states[idx]);
@@ -282,7 +293,7 @@ grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
             // printf("T%u : add stack (%d)  (row)\n", threadIdx.x + threadIdx.y * blockDim.x, blocks->stack_size);
         }
         else if (entropy == 0) {
-            // fprintf(stderr, "error in (mask) row propagation in block (%u, %u)\n", gy, gx);
+            // printf("error in (mask) row propagation in block (%u, %u)\n", gy, gx);
             return true;
         }
     }
@@ -306,16 +317,19 @@ grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, u
     
     // propagate the initial cell
     error |= grd_propagate_column(blocks, gx, gy, x, y, collapsed);
+    // printf("T%u : %u\n", threadIdx.x + threadIdx.y * blockDim.x, error);
     error |= grd_propagate_row(blocks, gx, gy, x, y, collapsed);
+    // printf("T%u : %u\n", threadIdx.x + threadIdx.y * blockDim.x, error);
     __syncthreads(); 
     error |= blk_propagate(blocks, gx, gy, collapsed);
+    // printf("T%u : %u\n", threadIdx.x + threadIdx.y * blockDim.x, error);
 
     shared_error[ threadIdx.x + threadIdx.y * blockDim.x ] = error;
     __syncthreads();// 
         
     for(uint32_t i = 0; i < blockDim.x * blockDim.y; i++){
         error |= shared_error[i];        
-        // printf("T%u : [%d]  %lu\n", threadIdx.x + threadIdx.y * blockDim.x, i, shared_error[i]);
+        // printf("T%u : [%d]  %u\n", threadIdx.x + threadIdx.y * blockDim.x, i, shared_error[i]);
     }
     
     while ( !error && blocks->stack_size > 0) {

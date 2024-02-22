@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils.cuh"
+
 #include "types.cuh"
 #include "bitfield.cuh"
 

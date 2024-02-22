@@ -31,6 +31,7 @@ target_link_libraries(wfc  PRIVATE -pthread -fopenmp -lm)
 target_compile_options(wfc PRIVATE -g -O3 -march=native -pthread -fopenmp )
 target_compile_options(wfc PRIVATE
     -Wall -Wextra 
+    -lineinfo
     # -pedantic #-Werror
     -Wshadow
     -Wcast-align -Wconversion -Wsign-conversion -Wdouble-promotion
