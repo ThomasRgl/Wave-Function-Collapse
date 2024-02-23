@@ -14,8 +14,10 @@
 // #error "WDC_CUDA should be defined..."
 // #endif
 __global__ void
-solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
+solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t * seed_list)
 {
+
+    uint64_t seed = seed_list[blockIdx.x];
 
     // extern __shared__ uint64_t big_array[];
     __shared__ uint64_t big_array[2999];
@@ -119,9 +121,16 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
         blocks->solved = success; 
     }
 
-    if( threadIdx.x == 0 && threadIdx.y == 0){
-        // grd_print(NULL, blocks);
-        wfc_clone_DTD(ret_blocks, blocks);
+    ////////////////////////////////////
+    uint32_t solved = 1; 
+    if(success && threadIdx.x == 0 && threadIdx.y == 0){
+        solved = atomicAdd((uint32_t*)&ret_blocks->solved, 1);
+        printf("B%u A trouvé !  val : %u \n", blockIdx.x, solved);
+
+        if( solved == 0 ){
+            // grd_print(NULL, blocks);
+            wfc_clone_DTD(ret_blocks, blocks);
+        }
     }
 
     return ;
@@ -129,7 +138,7 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
 }
 
 bool
-solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t seed)
+solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list, uint32_t gs, uint32_t bs, uint64_t p)
 {
 
     // wfc_blocks buffer;
@@ -137,14 +146,12 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t seed)
 
     // printf("solver: addr block : %p\n", blocks);
 
-    dim3 dimGrid(1, 1, 1);
+    dim3 dimGrid(p, 1, 1);
     // dim3 dimBlock(buffer.block_side, buffer.block_side, 1);
-    dim3 dimBlock(6, 6, 1);
+    dim3 dimBlock(bs, bs, 1);
 
     checkCudaErrors(cudaGetLastError());
 
-    const uint32_t gs = 6;
-    const uint32_t bs = 6;
     const uint64_t state_count = gs * gs * bs * bs;
     
     uint32_t sm = 
@@ -155,21 +162,115 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t seed)
         state_count;//stack
 
 
+    // uint64_t is_solved = 0;
+    // uint64_t * d_solved = 0;
+    // checkCudaErrors(cudaMalloc((void**)&d_solved, sizeof(uint64_t) ));
+
+    // checkCudaErrors(cudaMalloc((void**)&buffer->states    , state_count * sizeof(uint64_t) ));
     
-    solve_cuda_device<<<dimGrid, dimBlock, 0 >>>(d_blocks, d_init, seed);
+    solve_cuda_device<<<dimGrid, dimBlock, 0 >>>(d_blocks, d_init, seed_list);
 
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
 
     wfc_blocks * blocks =  wfc_clone_DTH( d_blocks); // can be optimized
 
-    bool success = blocks->solved;
-    if( success ){
+    uint32_t success = (uint32_t)blocks->solved;
+    if( success >= 1){
         printf("Host : success with seed : %lu\n\n", blocks->seed);
         // grd_print(NULL, blocks);
         verify_block(blocks);
     }
 
     super_safe_free(blocks);
-    return success;
+
+    return ( success >= 1 ? true : false);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool zut(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed) { return false;}

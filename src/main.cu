@@ -29,7 +29,8 @@ main(int argc, char **argv)
     const uint64_t max_iterations = count_seeds(args.seeds);
     const double start            = omp_get_wtime();
     
-    int max_threads = args.parallel > omp_get_max_threads() ? omp_get_max_threads() : args.parallel;
+    int max_threads = 1;
+    //int max_threads = args.parallel > omp_get_max_threads() ? omp_get_max_threads() : args.parallel;
     wfc_blocks_ptr * d_blocks_list = (wfc_blocks_ptr *) malloc( max_threads * sizeof(wfc_blocks_ptr));
     for (int i = 0; i < max_threads; i++) { 
         // blocks_list[i] = cloneToDevice( init, 0 );
@@ -43,12 +44,31 @@ main(int argc, char **argv)
 
             wfc_blocks_ptr d_blocks = d_blocks_list[omp_get_thread_num()];
 
+            // pthread_mutex_lock(&seed_mtx);
+            // uint64_t next_seed       = 0;
+            // const bool has_next_seed = try_next_seed(&args.seeds, &next_seed);
+            // pthread_mutex_unlock(&seed_mtx);
+
             pthread_mutex_lock(&seed_mtx);
-            uint64_t next_seed       = 0;
-            const bool has_next_seed = try_next_seed(&args.seeds, &next_seed);
+            uint64_t seed_list[args.parallel];
+            bool has_next_seed = true;
+            int nb_seed = 0;
+
+            // tant qu'il reste des seeds a explorer et que i << args.par
+            for( int i = 0; i < args.parallel && has_next_seed; i++) {
+                has_next_seed = try_next_seed(&args.seeds, &seed_list[i]);
+                nb_seed ++;
+            }
+
+            // si on a depassé le nombre de seed existante
+            if(!has_next_seed){
+                nb_seed--;
+            }
+
             pthread_mutex_unlock(&seed_mtx);
 
-            if (!has_next_seed) {
+            // si il ya des seed a explorer
+            if (nb_seed == 0) {
                 __atomic_fetch_or((int*)quit_ptr, true, __ATOMIC_SEQ_CST);
                 fprintf(stderr, "T%d : no more seed to try\n", omp_get_thread_num());
                 break;
@@ -57,8 +77,12 @@ main(int argc, char **argv)
             // wfc_clone_into(&blocks, next_seed, init);
             // blocks = cudaCloneToDevice( init, next_seed );
             
-            const bool solved = args.solver(d_blocks, d_init, next_seed);
-            __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
+            const bool solved = solve_cuda(d_blocks, d_init, 
+                    seed_list, init->grid_side, init->block_side, nb_seed);
+
+            // __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
+            __atomic_add_fetch(iterations_ptr, nb_seed, __ATOMIC_SEQ_CST);
+
 
             if (solved && args.output_folder != NULL) {
                 __atomic_fetch_or((int*)quit_ptr, true, __ATOMIC_SEQ_CST);
@@ -89,6 +113,8 @@ main(int argc, char **argv)
 
     super_safe_Cudafree(d_init);
     super_safe_free(init);
+
+
 
     return 0;
 }
