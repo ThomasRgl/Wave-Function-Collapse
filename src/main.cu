@@ -17,7 +17,7 @@ main(int argc, char **argv)
 
     wfc_args args             = wfc_parse_args(argc, argv);
     const wfc_blocks_ptr init = wfc_load(0, args.data_file);
-    const wfc_blocks_ptr d_init = cudaCloneToDevice( init, 0 );
+    const wfc_blocks_ptr d_init = wfc_clone_HTD( init);
 
     bool quit                = false;
     uint64_t iterations      = 0;
@@ -30,9 +30,10 @@ main(int argc, char **argv)
     const double start            = omp_get_wtime();
     
     int max_threads = args.parallel > omp_get_max_threads() ? omp_get_max_threads() : args.parallel;
-    wfc_blocks_ptr * blocks_list = (wfc_blocks_ptr *) malloc( max_threads * sizeof(wfc_blocks_ptr));
+    wfc_blocks_ptr * d_blocks_list = (wfc_blocks_ptr *) malloc( max_threads * sizeof(wfc_blocks_ptr));
     for (int i = 0; i < max_threads; i++) { 
-        blocks_list[i] = cudaCloneToDevice( init, 0 );
+        // blocks_list[i] = cloneToDevice( init, 0 );
+        d_blocks_list[i] = wfc_clone_HTD(init);
     }
     
     
@@ -40,7 +41,7 @@ main(int argc, char **argv)
     {
         while (!*quit_ptr) {
 
-            wfc_blocks_ptr blocks = blocks_list[omp_get_thread_num()];
+            wfc_blocks_ptr d_blocks = d_blocks_list[omp_get_thread_num()];
 
             pthread_mutex_lock(&seed_mtx);
             uint64_t next_seed       = 0;
@@ -56,13 +57,13 @@ main(int argc, char **argv)
             // wfc_clone_into(&blocks, next_seed, init);
             // blocks = cudaCloneToDevice( init, next_seed );
             
-            const bool solved = args.solver(blocks, d_init, next_seed);
+            const bool solved = args.solver(d_blocks, d_init, next_seed);
             __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
 
             if (solved && args.output_folder != NULL) {
                 __atomic_fetch_or((int*)quit_ptr, true, __ATOMIC_SEQ_CST);
                 fputc('\n', stdout);
-                wfc_save_into(blocks, args.data_file, args.output_folder);
+                wfc_save_into(d_blocks, args.data_file, args.output_folder);
             }
 
             else if (solved) {
@@ -71,20 +72,20 @@ main(int argc, char **argv)
                 // grd_print(NULL, blocks);
             }
 
-            else if (!*quit_ptr) {
+            //else if (!*quit_ptr) {
                 fprintf(stdout, "\rT%d : %.2f%% -> %.2fs\n", omp_get_thread_num(),
                         ((double)(*iterations_ptr) / (double)(max_iterations)) * 100.0,
                         omp_get_wtime() - start);
-            }
+            //}
             // super_safe_free(blocks);
-            blocks = NULL;
+            // d_blocks = NULL;
         }
         #pragma omp barrier
     }
 
     for (int i = 0; i < max_threads; i++)
-        super_safe_Cudafree(blocks_list[i]);
-    free(blocks_list);
+        super_safe_Cudafree(d_blocks_list[i]);
+    free(d_blocks_list);
 
     super_safe_Cudafree(d_init);
     super_safe_free(init);
