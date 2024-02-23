@@ -116,10 +116,13 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
     }
         
     if(success && threadIdx.x == 0 && threadIdx.y == 0){
-        // grd_print(NULL, blocks);
         blocks->solved = success; 
     }
+
+    if( threadIdx.x == 0 && threadIdx.y == 0){
+        // grd_print(NULL, blocks);
         wfc_clone_DTD(ret_blocks, blocks);
+    }
 
     return ;
 
