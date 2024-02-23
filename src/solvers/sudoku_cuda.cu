@@ -33,11 +33,14 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
         blocks->col_masks   = blocks->row_masks + gs*bs;
         blocks->blk_masks   = blocks->col_masks + gs*bs;
         blocks->stack_cells = (vec4 *)(blocks->blk_masks + gs * gs);
-    
+
         wfc_clone_DTD(blocks, init);
     }
     __syncthreads();
 
+
+    // wfc_blocks_ptr blocks = ret_blocks;
+    // wfc_clone_DTD(blocks, init);
 
 
 
@@ -98,6 +101,7 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
 
         // if( error && threadIdx.x == 0 && threadIdx.y == 0){
         //     printf("error\n");
+        //     // grd_print(NULL, blocks);
         // }
     
         if( error){
@@ -114,8 +118,8 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
     if(success && threadIdx.x == 0 && threadIdx.y == 0){
         // grd_print(NULL, blocks);
         blocks->solved = success; 
-        wfc_clone_DTD(ret_blocks, blocks);
     }
+        wfc_clone_DTD(ret_blocks, blocks);
 
     return ;
 
@@ -159,7 +163,7 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t seed)
     bool success = blocks->solved;
     if( success ){
         printf("Host : success with seed : %lu\n\n", blocks->seed);
-        grd_print(NULL, blocks);
+        // grd_print(NULL, blocks);
         verify_block(blocks);
     }
 

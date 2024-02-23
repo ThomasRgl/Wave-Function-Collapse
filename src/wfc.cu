@@ -95,9 +95,11 @@ blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
     uint64_t * blk_state = grd_at(blocks, gx, gy);
 
     uint32_t bs = blocks->block_side; 
+    // uint32_t idx = 0;
     for (uint32_t y = 0; y < bs; y++) {
         for (uint32_t x = 0; x < bs; x++) {
             uint64_t idx = idx_at(blocks, 0, 0, x, y);
+
             uint64_t state = blk_state[ idx ] ;
             uint8_t  entropy = entropy_compute(state);
             // printf("idx %d %d = %d == %d\n",y , x, idx, entropy);
@@ -111,6 +113,7 @@ blk_min_entropy(const wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy)
                     the_location.x = x;
                 }
             }
+            // idx ++;
         }
     }
     
@@ -177,18 +180,15 @@ blk_propagate(wfc_blocks_ptr blocks,
     uint32_t y = threadIdx.y;
     
     
-    if ( (blocks->blk_masks[gy * blocks->block_side + gx] & collapsed) == 0) {
-        // if (threadIdx.x == 0 && threadIdx.y == 0) {
-        //     printf("mask : %lu ;  collapsed : %lu\n", blocks->blk_masks[gy * blocks->block_side + gx], collapsed);
-        //     printf("error in (mask) block propagation in block (%u, %u)\n", gy, gx);
-        // }
-        return true;
-    }
-    __syncthreads();
+    // if ( (blocks->blk_masks[gy * blocks->block_side + gx] & collapsed) == 0) {
+    //     // if (threadIdx.x == 0 && threadIdx.y == 0) {
+    //     //     printf("mask : %lu ;  collapsed : %lu\n", blocks->blk_masks[gy * blocks->block_side + gx], collapsed);
+    //     //     printf("error in (mask) block propagation in block (%u, %u)\n", gy, gx);
+    //     // }
+    //     return true;
+    // }
 
-    if(x + y == 0) // if first thread
-        blocks->blk_masks[gy * blocks->block_side + gx] &= ~collapsed;
-    __syncthreads();
+    // __syncthreads();
 
     uint64_t idx = idx_at(blocks, gx, gy, x, y);
     uint8_t entropy = entropy_compute(blocks->states[idx]);
@@ -208,6 +208,8 @@ blk_propagate(wfc_blocks_ptr blocks,
             return true;
         }
     }
+    if(x + y == 0) // if first thread
+        blocks->blk_masks[gy * blocks->block_side + gx] &= ~collapsed;
 
     return false;
 }
@@ -221,18 +223,15 @@ grd_propagate_column(wfc_blocks_ptr blocks,
     uint32_t gy = threadIdx.x;
     uint32_t  y = threadIdx.y;
 
-    if ( (blocks->col_masks[gx * blocks->block_side + x] & collapsed) == 0) {
-        // if (threadIdx.x == 0 && threadIdx.y == 0) {
-        //     printf("error in (mask) column propagation in column block %u in column %u\n", gx, x);
-        // }
-        return true;
-    }
-    __syncthreads();
+    // if ( (blocks->col_masks[gx * blocks->block_side + x] & collapsed) == 0) {
+    //     // if (threadIdx.x == 0 && threadIdx.y == 0) {
+    //     //     printf("error in (mask) column propagation in column block %u in column %u\n", gx, x);
+    //     // }
+    //     return true;
+    // }
    
-    if(gy + y == 0) // if first thread
-        blocks->col_masks[gx * blocks->block_side + x] &= ~collapsed;
 
-    __syncthreads();
+    // __syncthreads();
 
     uint64_t idx = idx_at(blocks, gx, gy, x, y);
     uint8_t entropy = entropy_compute(blocks->states[idx]);
@@ -253,6 +252,8 @@ grd_propagate_column(wfc_blocks_ptr blocks,
             return true;
         }
     }
+    if(gy + y == 0) // if first thread
+        blocks->col_masks[gx * blocks->block_side + x] &= ~collapsed;
 
     return false;
 }
@@ -266,17 +267,15 @@ grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
     uint32_t gx = threadIdx.x;
     uint32_t  x = threadIdx.y;
 
-    if ( (blocks->row_masks[gy * blocks->block_side + y] & collapsed) == 0) {
-        // if (threadIdx.x == 0 && threadIdx.y == 0) {
-        //     printf("error in (mask) row propagation in row block %u in row %u\n", gy, y);
-        // }
-        return true;
-    }
-    __syncthreads();
+    // if ( (blocks->row_masks[gy * blocks->block_side + y] & collapsed) == 0) {
+    //     // if (threadIdx.x == 0 && threadIdx.y == 0) {
+    //     //     printf("error in (mask) row propagation in row block %u in row %u\n", gy, y);
+    //     // }
+    //     return true;
+    // }
 
-    if(x + gx == 0) // if first thread
-        blocks->row_masks[gy * blocks->block_side + y] &= ~collapsed;
-    __syncthreads();
+    // if(x + gx == 0) // if first thread
+    // __syncthreads();
 
     uint64_t idx = idx_at(blocks, gx, gy, x, y);
     uint8_t entropy = entropy_compute(blocks->states[idx]);
@@ -297,6 +296,8 @@ grd_propagate_row(wfc_blocks_ptr blocks, uint32_t __, uint32_t gy,
             return true;
         }
     }
+    if(x + gx == 0) // if first thread
+        blocks->row_masks[gy * blocks->block_side + y] &= ~collapsed;
 
     return false;
 }
@@ -314,15 +315,22 @@ grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, u
 
 
     // printf("T%u : collapsed (threads): %lu () at : [%u, %u] [%u, %u]\n", threadIdx.x + threadIdx.y * blockDim.x, (uint64_t)log2((double)collapsed)+1, gy, gx, y, x);
-    
+
+    if ((blocks->col_masks[gx * blocks->block_side + x] & 
+         blocks->row_masks[gy * blocks->block_side + y] & 
+         blocks->blk_masks[gy * blocks->block_side + gx] & 
+         collapsed) == 0)
+    {
+        return true;
+    }
+    __syncthreads();
+
+   
     // propagate the initial cell
     error |= grd_propagate_column(blocks, gx, gy, x, y, collapsed);
-    // printf("T%u : %u\n", threadIdx.x + threadIdx.y * blockDim.x, error);
     error |= grd_propagate_row(blocks, gx, gy, x, y, collapsed);
-    // printf("T%u : %u\n", threadIdx.x + threadIdx.y * blockDim.x, error);
     __syncthreads(); 
     error |= blk_propagate(blocks, gx, gy, collapsed);
-    // printf("T%u : %u\n", threadIdx.x + threadIdx.y * blockDim.x, error);
 
     shared_error[ threadIdx.x + threadIdx.y * blockDim.x ] = error;
     __syncthreads();// 
@@ -369,6 +377,17 @@ grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, u
         // printf("T%u : collapsed (threads): at : [%u, %u] [%u, %u]\n", threadIdx.x + threadIdx.y * blockDim.x, gy, gx, y, x);
 
         // __syncthreads();
+
+        if ((blocks->col_masks[gx * blocks->block_side + x] & 
+             blocks->row_masks[gy * blocks->block_side + y] & 
+             blocks->blk_masks[gy * blocks->block_side + gx] & 
+             collapsed) == 0)
+        {
+            return true;
+        }
+        __syncthreads();
+
+
         // propagate the new cell
         error |= grd_propagate_column(blocks, gx, gy, x, y, collapsed);
         error |= grd_propagate_row(blocks, gx, gy, x, y, collapsed);
@@ -379,10 +398,10 @@ grd_propagate_all(wfc_blocks_ptr blocks, uint32_t gx, uint32_t gy, uint32_t x, u
         __syncthreads(); // attendre fin shared error ecriture
 
 
-        if( threadIdx.x == 0 && threadIdx.y == 0 ){
-            *blk_at(blocks, gx, gy, x, y) = collapsed; // Useless ????
-        }
-        __syncthreads(); // wait useless
+        // if( threadIdx.x == 0 && threadIdx.y == 0 ){
+        //     *blk_at(blocks, gx, gy, x, y) = collapsed; // Useless ????
+        // }
+        // __syncthreads(); // wait useless
             
         for(uint32_t i = 0; i < blockDim.x * blockDim.y; i++){
             error |= shared_error[i];        
