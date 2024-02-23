@@ -18,27 +18,27 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
 {
 
     // extern __shared__ uint64_t big_array[];
+
+    // share mem
     __shared__ uint64_t big_array[2999];
 
     __shared__ wfc_blocks b;
     wfc_blocks_ptr blocks = &b;
 
-    if( threadIdx.x == 0 && threadIdx.y == 0){
-        const uint32_t gs = init->grid_side;
-        const uint32_t bs = init->block_side;
-        const uint64_t state_count = gs * gs * bs * bs;
+    const uint32_t gs = init->grid_side;
+    const uint32_t bs = init->block_side;
+    const uint64_t state_count = gs * gs * bs * bs;
 
-        blocks->states      = (uint64_t*) &big_array[0];
-        blocks->row_masks   = blocks->states + state_count;
-        blocks->col_masks   = blocks->row_masks + gs*bs;
-        blocks->blk_masks   = blocks->col_masks + gs*bs;
-        blocks->stack_cells = (vec4 *)(blocks->blk_masks + gs * gs);
+    blocks->states      = (uint64_t*) &big_array[0];
+    blocks->row_masks   = blocks->states + state_count;
+    blocks->col_masks   = blocks->row_masks + gs*bs;
+    blocks->blk_masks   = blocks->col_masks + gs*bs;
+    blocks->stack_cells = (vec4 *)(blocks->blk_masks + gs * gs);
 
-        wfc_clone_DTD(blocks, init);
-    }
-    __syncthreads();
+    wfc_clone_DTD(blocks, init);
 
 
+    // no share mem
     // wfc_blocks_ptr blocks = ret_blocks;
     // wfc_clone_DTD(blocks, init);
 
@@ -55,9 +55,7 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
 
     jusqua_la_retraite {
 
-        // if( threadIdx.x == 0 && threadIdx.y == 0){
-        //     printf("\n======== iteration : %lu ========\n\n", iteration);
-        // }
+        // printf("\n======== iteration : %lu ========\n\n", iteration);
 
         vec4 loc = grd_min_entropy(blocks);
         
@@ -74,52 +72,42 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t seed)
             break;
         }
 
-        // if( state == 0 && threadIdx.x == 0 && threadIdx.y == 0) {
+        // if( state == 0) {
         //     printf("state = 0\n");
         // }
+        //make -B -j8 &&  ./wfc -l cuda -s 1 -p 1   ../data/grid-3x3.data
+        //srun -N 1 -n 1 -c 25 --exclusive --pty --gres=gpu /bin/bash
 
-        __shared__ uint64_t collapsed_state;
 
-        if( threadIdx.x == 0 && threadIdx.y == 0){
-            collapsed_state = entropy_collapse_state(
-            *state, loc.gx, loc.gy, loc.x, loc.y,
-            blocks->seed, iteration);
-            *state = collapsed_state;
 
-            // printf("collapsed (entropy): %lu (",(uint64_t)log2((double)collapsed_state)+1);
-            // printBinary2(collapsed_state);
-            // printf(") at : [%u, %u] [%u, %u]\n", loc.gy, loc.gx, loc.y, loc.x);
-        }
-        __syncthreads();
+        uint64_t collapsed_state;
+
+        collapsed_state = entropy_collapse_state(
+        *state, loc.gx, loc.gy, loc.x, loc.y,
+        blocks->seed, iteration);
+        *state = collapsed_state;
+
+        // printf("collapsed (entropy): %lu (",(uint64_t)log2((double)collapsed_state)+1);
+        // printBinary2(collapsed_state);
+        // printf(") at : [%u, %u] [%u, %u]\n", loc.gy, loc.gx, loc.y, loc.x);
 
         bool error = grd_propagate_all(blocks, loc.gx,
                             loc.gy, loc.x, loc.y, collapsed_state);
-        
-        __syncthreads();
-
-        
-
-        // if( error && threadIdx.x == 0 && threadIdx.y == 0){
-        //     printf("error\n");
-        //     // grd_print(NULL, blocks);
-        // }
-    
+            
         if( error){
             break;
         }
 
         iteration += 1;
 
-        // if( threadIdx.x == 0 && threadIdx.y == 1){
-        //     grd_print(NULL, blocks);
-        // }
     }
         
-    if(success && threadIdx.x == 0 && threadIdx.y == 0){
+    //grd_print(NULL, blocks);
+    if(success ){
         // grd_print(NULL, blocks);
         blocks->solved = success; 
     }
-        wfc_clone_DTD(ret_blocks, blocks);
+    wfc_clone_DTD(ret_blocks, blocks);
 
     return ;
 
@@ -136,7 +124,7 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t seed)
 
     dim3 dimGrid(1, 1, 1);
     // dim3 dimBlock(buffer.block_side, buffer.block_side, 1);
-    dim3 dimBlock(6, 6, 1);
+    dim3 dimBlock(1, 1, 1);
 
     checkCudaErrors(cudaGetLastError());
 
