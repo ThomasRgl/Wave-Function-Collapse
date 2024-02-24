@@ -20,7 +20,7 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t * see
     uint64_t seed = seed_list[blockIdx.x];
 
     // extern __shared__ uint64_t big_array[];
-    __shared__ uint64_t big_array[2999];
+    __shared__ uint64_t big_array[4999];
 
     __shared__ wfc_blocks b;
     wfc_blocks_ptr blocks = &b;
@@ -161,12 +161,13 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list,
 
     const uint64_t state_count = gs * gs * bs * bs;
     
-    uint32_t sm = 
+    uint64_t sm = 
         state_count + // states
         gs * bs +// row
         gs * bs +// col
         gs * gs +//blk
         state_count;//stack
+
 
     uint64_t * d_seed_list;
     checkCudaErrors(cudaMalloc((void**)&d_seed_list, p * sizeof(uint64_t) ));
@@ -195,7 +196,8 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list,
 
     checkCudaErrors(cudaMemcpy(&solved, d_solved, sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
-    
+   
+
     if( solved >= 1){
         wfc_blocks * blocks =  wfc_clone_DTH( d_blocks); // can be optimized
         printf("Host : success with seed : %lu\n\n", blocks->seed);
@@ -203,6 +205,10 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list,
         verify_block(blocks);
         super_safe_free(blocks);
     }
+
+    cudaFree(d_seed_list);
+    cudaFree(d_solved);
+
 
 
     return ( solved >= 1 ? true : false);
