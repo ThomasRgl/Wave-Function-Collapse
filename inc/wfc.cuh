@@ -91,11 +91,14 @@ __device__  bool grd_propagate_row(wfc_blocks_ptr, uint32_t, uint32_t, uint32_t,
 // bool solve_cpu(wfc_blocks_ptr);
 // bool solve_openmp(wfc_blocks_ptr);
 // bool solve_target(wfc_blocks_ptr);
-bool solve_cuda(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed);
+bool solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list, uint32_t gs, uint32_t bs, uint64_t p);
+bool zut(wfc_blocks_ptr blocks, wfc_blocks_ptr init, uint64_t seed);
+
+
 
 static const wfc_solver solvers[] = {
     // { "cpu", solve_cpu },
     // { "omp", solve_openmp },
     // { "target", solve_target },
-    { "cuda", solve_cuda }
+    { "cuda", zut }
 };
