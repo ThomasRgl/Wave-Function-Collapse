@@ -230,7 +230,7 @@ wfc_save_into(const wfc_blocks_ptr blocks, const char data[], const char folder[
             fprintf(stderr, "failed to write: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
-        if (i%(blocks->block_side * blocks->grid_side) == (blocks->block_side * blocks->grid_side) - 1) {
+        if (i%(blocks->block_side * blocks->block_side) == (blocks->block_side * blocks->block_side) - 1) {
             if (fprintf(f, "\n") < 0) {
                 fprintf(stderr, "failed to write: %s\n", strerror(errno));
                 exit(EXIT_FAILURE);
