@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
 project(WaveFunctionCollapse VERSION 0.1 LANGUAGES CUDA )
-# cmake_policy(SET CMP0009 NEW) # Do not follow symlinks with GLOB_RECURSE
+cmake_policy(SET CMP0009 NEW) # Do not follow symlinks with GLOB_RECURSE
 
 STRING(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" insource)
 GET_FILENAME_COMPONENT(PARENTDIR ${CMAKE_SOURCE_DIR} PATH)
