@@ -197,14 +197,14 @@ wfc_save_into(const wfc_blocks_ptr blocks, const char data[], const char folder[
     const size_t folder_len = strlen(folder);
     if (folder[folder_len - 1] == '/' && file_name[0] == '/') {
         snprintf(destination, 1023, "%.*s%.*s.%lu.save", (int)(folder_len - 1), folder, (int)length,
-                 file_name, blocks->states[0]);
+                 file_name, blocks->seed);
     } else if ((folder[folder_len - 1] == '/' && file_name[0] != '/') ||
                (folder[folder_len - 1] != '/' && file_name[0] == '/')) {
         snprintf(destination, 1023, "%s%.*s.%lu.save", folder, (int)length, file_name,
-                 blocks->states[0]);
+                 blocks->seed);
     } else {
         snprintf(destination, 1023, "%s/%.*s.%lu.save", folder, (int)length, file_name,
-                 blocks->states[0]);
+                 blocks->seed);
     }
     fprintf(stdout, "save result to file: %s\n", destination);
 
@@ -223,14 +223,20 @@ wfc_save_into(const wfc_blocks_ptr blocks, const char data[], const char folder[
         exit(EXIT_FAILURE);
     }
 
-    const uint64_t starts = wfc_control_states_count(blocks->grid_side, blocks->block_side),
-                   ends   = blocks->grid_side * blocks->grid_side * blocks->block_side *
-                          blocks->block_side;
+    const uint64_t ends = blocks->grid_side * blocks->grid_side * blocks->block_side * blocks->block_side;
+
     for (uint64_t i = 0; i < ends; i += 1) {
-        if (fprintf(f, "%lu\n", blocks->states[starts + i]) < 0) {
+        if (fprintf(f, "%lu ", (uint64_t)log2((double)blocks->states[i])+1) < 0) {
             fprintf(stderr, "failed to write: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
+        if (i%(blocks->block_side * blocks->grid_side) == (blocks->block_side * blocks->grid_side) - 1) {
+            if (fprintf(f, "\n") < 0) {
+                fprintf(stderr, "failed to write: %s\n", strerror(errno));
+                exit(EXIT_FAILURE);
+            }
+        }
+
     }
 
     fprintf(stdout, "saved successfully %lu states\n", ends);
