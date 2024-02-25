@@ -97,9 +97,16 @@ main(int argc, char **argv)
 
             // wfc_clone_into(&blocks, next_seed, init);
             // blocks = cudaCloneToDevice( init, next_seed );
-            
-            const bool solved = solve_cuda(d_blocks, d_init, 
+
+
+            wfc_blocks_ptr h_blocks = solve_cuda(d_blocks, d_init, 
                     seed_list, init->grid_side, init->block_side, nb_seed);
+            
+            bool solved = false;
+
+            if (h_blocks != NULL) {
+                solved = h_blocks->solved;
+            }
 
             // __atomic_add_fetch(iterations_ptr, 1, __ATOMIC_SEQ_CST);
             __atomic_add_fetch(iterations_ptr, nb_seed, __ATOMIC_SEQ_CST);
@@ -108,7 +115,11 @@ main(int argc, char **argv)
             if (solved && args.output_folder != NULL) {
                 __atomic_fetch_or((int*)quit_ptr, true, __ATOMIC_SEQ_CST);
                 fputc('\n', stdout);
-                wfc_save_into(d_blocks, args.data_file, args.output_folder);
+                #pragma omp single nowait
+                {
+                    wfc_save_into(h_blocks, args.data_file, args.output_folder);
+                }
+                
             }
 
             else if (solved) {
@@ -117,6 +128,10 @@ main(int argc, char **argv)
                 // grd_print(NULL, blocks);
             }
 
+            if (h_blocks != NULL) {
+                super_safe_free(h_blocks);
+            }
+            
             //else if (!*quit_ptr) {
                 fprintf(stdout, "\rT%d : %.2f%% -> %.2fs\n", omp_get_thread_num(),
                         ((double)(*iterations_ptr) / (double)(max_iterations)) * 100.0,
@@ -128,18 +143,15 @@ main(int argc, char **argv)
         #pragma omp barrier
     }
 
-    // for (uint64_t i = 0; i < max_threads; i++){
-    //     cudaSetDevice((int)i);
-    //     super_safe_Cudafree(d_blocks_list[i]);
-    //     super_safe_Cudafree(d_init_list[i]);
-    // }
-    // free(d_blocks_list);
-    // free(d_init_list);
+    for (uint64_t i = 0; i < max_threads; i++){
+        cudaSetDevice((int)i);
+        super_safe_Cudafree(d_blocks_list[i]);
+        super_safe_Cudafree(d_init_list[i]);
+    }
+    free(d_blocks_list);
+    free(d_init_list);
 
-    // super_safe_Cudafree(d_init);
     super_safe_free(init);
-
-
 
     return 0;
 }

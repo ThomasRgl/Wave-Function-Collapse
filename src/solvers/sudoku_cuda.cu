@@ -144,7 +144,7 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t * see
 
 }
 
-bool
+wfc_blocks_ptr
 solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list, uint32_t gs, uint32_t bs, uint64_t p)
 {
 
@@ -196,22 +196,20 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list,
 
     checkCudaErrors(cudaMemcpy(&solved, d_solved, sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
-   
+   wfc_blocks * blocks = NULL;
 
     if( solved >= 1){
-        wfc_blocks * blocks =  wfc_clone_DTH( d_blocks); // can be optimized
+        blocks =  wfc_clone_DTH( d_blocks); // can be optimized
         printf("Host : success with seed : %lu\n\n", blocks->seed);
         // grd_print(NULL, blocks);
         verify_block(blocks);
-        super_safe_free(blocks);
+        // super_safe_free(blocks);
     }
 
     cudaFree(d_seed_list);
     cudaFree(d_solved);
 
-
-
-    return ( solved >= 1 ? true : false);
+    return (wfc_blocks_ptr)blocks;
 }
 
 
