@@ -112,7 +112,7 @@ solve_cuda_device(wfc_blocks_ptr ret_blocks, wfc_blocks_ptr init, uint64_t * see
 
         iteration += 1;
 
-        // if( threadIdx.x == 0 && threadIdx.y == 1){
+        // if( threadIdx.x == 0 && threadIdx.y == 0){
         //     grd_print(NULL, blocks);
         // }
     }
@@ -155,7 +155,7 @@ solve_cuda(wfc_blocks_ptr d_blocks, wfc_blocks_ptr d_init, uint64_t * seed_list,
 
     dim3 dimGrid(p, 1, 1);
     // dim3 dimBlock(buffer.block_side, buffer.block_side, 1);
-    dim3 dimBlock(bs, bs, 1);
+    dim3 dimBlock(gs, gs, 1);
 
     checkCudaErrors(cudaGetLastError());
 
